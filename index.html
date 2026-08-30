@@ -191,8 +191,9 @@ function normSample(s){
   if(s&&(s.q||s.question)&&(s.a||s.answer))return 'س: '+(s.q||s.question)+'\nج: '+(s.a||s.answer);
   return null;
 }
+function deepFlat(a){return a.reduce(function(r,x){return r.concat(Array.isArray(x)?deepFlat(x):[x])},[])}
 function loadTraining(){
-  try{var c=JSON.parse(localStorage.getItem('train_kb')||'0');if(c&&c.kb&&Date.now()-c.t<864e5){TRAIN_KB=c.kb;return}}catch(e){}
+  try{var c=JSON.parse(localStorage.getItem('train_kb2')||'0');if(c&&c.kb&&Date.now()-c.t<864e5){TRAIN_KB=c.kb;return}}catch(e){}
   fetch('https://api.github.com/repos/Rezzzz77/nioshanik-app/contents/data',{headers:{Accept:'application/vnd.github+json'}})
     .then(function(r){return r.ok?r.json():Promise.reject()})
     .then(function(list){
@@ -203,9 +204,8 @@ function loadTraining(){
       }).catch(function(){return []})}));
     })
     .then(function(arrs){
-      TRAIN_KB=[].concat.apply([],[].concat.apply([],arrs).map(normSample));
-      TRAIN_KB=TRAIN_KB.filter(function(x){return x&&typeof x==='string'});
-      if(TRAIN_KB.length)try{localStorage.setItem('train_kb',JSON.stringify({t:Date.now(),kb:TRAIN_KB}))}catch(e){}
+      TRAIN_KB=deepFlat(arrs).filter(function(x){return x&&typeof x==='string'});
+      if(TRAIN_KB.length)try{localStorage.setItem('train_kb2',JSON.stringify({t:Date.now(),kb:TRAIN_KB}))}catch(e){}
     })
     .catch(function(){});
 }
