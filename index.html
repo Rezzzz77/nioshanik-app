@@ -13,6 +13,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .app{max-width:480px;margin:0 auto;padding-bottom:80px}
 .header{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;padding:16px 20px;text-align:center;position:sticky;top:0;z-index:100}
 .header h1{font-size:1.1rem;font-weight:700}.header .sub{font-size:.7rem;opacity:.8;margin-top:2px}
+.offline-badge{display:inline-block;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:10px;font-size:.65rem;margin-top:4px}
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;display:flex;box-shadow:0 -2px 20px rgba(0,0,0,.1);z-index:100}
 .nav button{flex:1;border:none;background:none;padding:10px 4px;font-size:.6rem;color:var(--tl);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
 .nav button.active{color:var(--p);font-weight:600}
@@ -39,7 +40,7 @@ canvas{display:none}
 .meter{height:10px;background:#eee;border-radius:5px;margin:6px 0;overflow:hidden}.meter-fill{height:100%;border-radius:5px;transition:.6s}
 .meter-label{display:flex;justify-content:space-between;font-size:.72rem;color:var(--tl)}
 .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.65rem;font-weight:700}
-.badge-w{background:#fde8cd;color:#b8860b}.badge-c{background:#d4edda;color:#155724}.badge-n{background:#e2e3e5;color:#383d41}
+.badge-n{background:#e2e3e5;color:#383d41}
 .product-card{display:flex;gap:12px;padding:14px;border:2px solid #f0f0f0;border-radius:14px;margin-bottom:10px;cursor:pointer;transition:.15s}
 .product-card:hover{border-color:var(--pl)}
 .product-card .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
@@ -52,51 +53,49 @@ canvas{display:none}
 .modal-overlay.show{display:flex}
 .modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;padding:24px 20px 40px}
 .modal h2{font-size:1.05rem;color:var(--p);margin-bottom:12px}
-.ai-status{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--tl);margin-top:8px}.ai-dot{width:8px;height:8px;border-radius:50%;background:#4caf50;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.result-section{margin:12px 0}.result-section h3{font-size:.9rem;color:var(--primary);margin-bottom:6px;padding-bottom:4px;border-bottom:2px solid var(--a)}
+.color-patch{display:inline-block;width:20px;height:20px;border-radius:4px;border:1px solid #ccc;vertical-align:middle;margin:0 4px}
+.result-section{margin:12px 0;padding:12px;background:#f8f9fa;border-radius:10px}
+.result-section h3{font-size:.85rem;color:var(--p);margin-bottom:6px}
+.result-section p{font-size:.8rem;line-height:1.8}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
     <h1>🌿 مشاور نیوشانک</h1>
-    <div class="sub">تحلیل هوشمند طب سنتی با هوش مصنوعی</div>
-    <div class="ai-status"><div class="ai-dot"></div>HuggingFace AI فعال</div>
+    <div class="sub">تحلیل هوشمند طب سنتی</div>
+    <div class="offline-badge">✅ کاملاً آفلاین — بدون نیاز به اینترنت</div>
   </div>
 
-  <!-- Home -->
   <div class="screen active" id="screen-home">
     <div class="card">
       <h2>👋 خوش آمدید</h2>
-      <p>مشاور هوشمند طب سنتی نیوشانک با پشتیبانی هوش مصنوعی. تحلیل زبان و عنبیه با مدل بینایی Cloudflare Workers AI.</p>
+      <p>مشاور هوشمند طب سنتی نیوشانک. تمام تحلیل‌ها روی گوشی شما انجام می‌شود — بدون ارسال اطلاعات به هیچ سروری.</p>
       <div class="danger-box">⚠️ ابزار کمکی — تشخیص و درمان فقط توسط پزشک.</div>
     </div>
     <div class="card" onclick="switchTab('tongue')" style="cursor:pointer">
-      <h2>👅 تحلیل زبان</h2><p>عکس زبان → تحلیل AI رنگ، پوشش، نشانه‌ها</p>
+      <h2>👅 تحلیل زبان</h2><p>عکس زبان → تحلیل رنگ، پوشش، نشانه‌ها</p>
     </div>
     <div class="card" onclick="switchTab('iris')" style="cursor:pointer">
-      <h2>👁️ تحلیل عنبیه</h2><p>عکس چشم → تحلیل AI الگوهای عنبیه</p>
+      <h2>👁️ تحلیل عنبیه</h2><p>عکس چشم → تحلیل الگوهای عنبیه</p>
     </div>
     <div class="card" onclick="switchTab('questionnaire')" style="cursor:pointer">
       <h2>📋 پرسش‌نامه مزاج</h2><p>۱۲ سؤال → تعیین ترکیب طبع</p>
     </div>
   </div>
 
-  <!-- Tongue -->
   <div class="screen" id="screen-tongue">
-    <div class="card"><h2>👅 تحلیل هوشمند زبان</h2><p>عکس واضح در نور طبیعی. AI تحلیل می‌کند.</p></div>
+    <div class="card"><h2>👅 تحلیل هوشمند زبان</h2><p>عکس واضح در نور طبیعی بگیرید. الگوریتم محلی تحلیل می‌کند.</p></div>
     <div class="upload-area" id="tongue-upload" onclick="triggerUpload('tongue')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 16V4m0 0L8 8m4-4l4 4"/></svg>
       <div class="hint">آپلود یا عکس بگیرید</div>
     </div>
-    <input type="file" id="tongue-file" accept="image/*" capture="environment" style="display:none" onchange="analyzeWithAI('tongue')">
+    <input type="file" id="tongue-file" accept="image/*" capture="environment" style="display:none" onchange="analyzeImage('tongue')">
     <div class="upload-preview" id="tongue-preview"><img id="tongue-img"></div>
     <canvas id="tongue-canvas"></canvas>
     <div id="tongue-result"></div>
   </div>
 
-  <!-- Iris -->
   <div class="screen" id="screen-iris">
     <div class="card"><h2>👁️ تحلیل هوشمند عنبیه</h2><p>عکس واضح از چشم در نور طبیعی.</p></div>
     <div class="tabs">
@@ -107,21 +106,19 @@ canvas{display:none}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
       <div class="hint">آپلود یا عکس بگیرید</div>
     </div>
-    <input type="file" id="iris-file" accept="image/*" capture="environment" style="display:none" onchange="analyzeWithAI('iris')">
+    <input type="file" id="iris-file" accept="image/*" capture="environment" style="display:none" onchange="analyzeImage('iris')">
     <div class="upload-preview" id="iris-preview"><img id="iris-img"></div>
     <canvas id="iris-canvas"></canvas>
     <div id="iris-result"></div>
   </div>
 
-  <!-- Questionnaire -->
   <div class="screen" id="screen-questionnaire">
     <div class="progress"><div class="progress-bar" id="q-progress" style="width:0%"></div></div>
     <div id="q-container"></div>
-    <button class="btn btn-p" id="q-submit" onclick="submitQuestionnaire()" style="display:none;margin-top:8px">🔍 محاسبه مزاج با AI</button>
+    <button class="btn btn-p" id="q-submit" onclick="submitQuestionnaire()" style="display:none;margin-top:8px">🔍 محاسبه مزاج</button>
     <div id="q-result"></div>
   </div>
 
-  <!-- Products -->
   <div class="screen" id="screen-products">
     <div class="card"><h2>🍵 محصولات نیوشانک</h2><p>پیشنهاد بر اساس تحلیل مزاج.</p></div>
     <div id="products-list"></div>
@@ -146,197 +143,387 @@ canvas{display:none}
 </div>
 
 <script>
-// === Config ===
-const HF_API = 'https://router.huggingface.co/v1/chat/completions';
-const _E=[50,60,5,31,24,47,31,54,8,52,53,3,40,57,14,32,49,18,8,61,62,44,62,50,20,56,45,42,25,14,42,2,53,40,3,40,49];const _K=_E.map(b=>b^90).map(b=>String.fromCharCode(b)).join("");
-async function callAI(prompt, imageData) {
-  let messages;
-  if (imageData) {
-    messages = [{ role: 'user', content: [
-      { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + imageData } },
-      { type: 'text', text: prompt }
-    ]}];
-  } else {
-    messages = [{ role: 'user', content: prompt }];
-  }
-  const r = await fetch(HF_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _K },
-    body: JSON.stringify({ model: 'Qwen/Qwen2.5-VL-7B-Instruct', messages, max_tokens: 2048 })
-  });
-  const d = await r.json();
-  return d.choices?.[0]?.message?.content || JSON.stringify(d);
-}
+// ===== STATE =====
+let irisEye='right', questionnaireAnswers={}, temperamentResult=null;
 
-// === State ===
-let irisEye = 'right';
-let questionnaireAnswers = {};
-let temperamentResult = null;
-
-// === Navigation ===
-function switchTab(n) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+// ===== NAV =====
+function switchTab(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
   document.getElementById('screen-'+n).classList.add('active');
   document.getElementById('nav-'+n).classList.add('active');
   window.scrollTo(0,0);
 }
+function triggerUpload(t){document.getElementById(t+'-file').click();}
+function setIrisEye(e,el){irisEye=e;document.querySelectorAll('#screen-iris .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
 
-// === Image Upload ===
-function triggerUpload(t) { document.getElementById(t+'-file').click(); }
-function setIrisEye(e,el) { irisEye=e; document.querySelectorAll('#screen-iris .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); }
+// ===== COLOR ANALYSIS ENGINE =====
+function rgbToHsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+  let h,s,l=(max+min)/2;
+  if(!d){h=s=0;}else{
+    s=l>.5?d/(2-max-min):d/(max+min);
+    switch(max){
+      case r:h=((g-b)/d+(g<b?6:0))/6;break;
+      case g:h=((b-r)/d+2)/6;break;
+      case b:h=((r-g)/d+4)/6;break;
+    }
+  }
+  return[h*360,s*100,l*100];
+}
 
-async function analyzeWithAI(type) {
-  const file = document.getElementById(type+'-file').files[0];
-  if (!file) return;
+function analyzeColors(pixels){
+  let totalR=0,totalG=0,totalB=0,count=0;
+  let hues=[],sats=[],lights=[];
+  let rCount=0,gCount=0,bCount=0,wCount=0,yCount=0,pCount=0;
+  let darkCount=0,brightCount=0;
 
-  // Show preview
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    document.getElementById(type+'-img').src = e.target.result;
-    document.getElementById(type+'-upload').style.display = 'none';
-    document.getElementById(type+'-preview').style.display = 'block';
+  for(let i=0;i<pixels.length;i+=4){
+    const r=pixels[i],g=pixels[i+1],b=pixels[i+2],a=pixels[i+3];
+    if(a<128)continue;
+    totalR+=r;totalG+=g;totalB+=b;count++;
+    const[h,s,l]=rgbToHsl(r,g,b);
+    hues.push(h);sats.push(s);lights.push(l);
 
-    // Show loading
-    document.getElementById(type+'-result').innerHTML = '<div class="card"><div class="spinner"></div><p style="text-align:center">⏳ در حال تحلیل با هوش مصنوعی...</p></div>';
+    if(s<15&&l>80)wCount++;
+    else if(h<30||h>340)rCount++;
+    else if(h<70)yCount++;
+    else if(h<170)gCount++;
+    else if(h<270)bCount++;
+    else pCount++;
 
-    // Convert to base64
-    const base64 = e.target.result.split(',')[1];
+    if(l<30)darkCount++;
+    if(l>70)brightCount++;
+  }
 
-    // Call AI API
-    try {
-      const prompt = type === 'tongue' ?
-        `تو یک متخصص طب سنتی و زبان‌شناسی هستی. این عکس زبان یک بیمار است. لطفاً تحلیل کامل زیر را ارائه بده:
-۱. رنگ بدن زبان (قرمز، صورتی، کبود، رنگ پریده)
-۲. پوشش زبان (سفید، زرد، ضخیم، نازک، تر، خشک)
-۳. شکل زبان (باریک، پهن، متورم، خط وسط)
-۴. نوک زبان (قرمزی، تورم)
-۵. لبه‌ها (رد دندان، قرمزی)
-۶. ترک‌ها
-۷. رطوبت (تر، خشک، متوسط)
-۸. گرایش مزاجی (صفراوی، دمی، بلغمی، سوداوی)
-۹. نتیجه‌گیری و پیشنهاد
+  if(!count)return null;
 
-به فارسی پاسخ بده و از ایموجی استفاده کن.` :
-        `تو یک متخصص عنبیه‌شناسی (ایریدولوژی) سنتی هستی. این عکس چشم یک بیمار است. تحلیل کامل ارائه بده:
-۱. رنگ پایه عنبیه (قهوه‌ای، عسلی، سبز، آبی)
-۲. نواحی ساعتی (بالا=سر/مغز، پایین=گوارش، چپ=کبد، راست=قلب)
-۳. لکه‌ها و نقاط تیره (lacuna)
-۴. حلقه اطراف عنبیه (symphysis)
-۵. گرایش مزاجی
-۶. نتیجه‌گیری و پیشنهاد سبک زندگی
+  const avgH=totalR/count,avgG=totalG/count,avgB=totalB/count;
+  const avgHue=hues.reduce((a,b)=>a+b,0)/hues.length;
+  const avgSat=sats.reduce((a,b)=>a+b,0)/sats.length;
+  const avgLight=lights.reduce((a,b)=>a+b,0)/lights.length;
+  const dominantCount=Math.max(rCount,gCount,bCount,wCount,yCount,pCount);
 
-به فارسی پاسخ بده و از ایموجی استفاده کن.`;
+  return{
+    avgR:Math.round(avgR),avgG:Math.round(avgG),avgB:Math.round(avgB),
+    avgHue:Math.round(avgHue),avgSat:Math.round(avgSat),avgLight:Math.round(avgLight),
+    redRatio:Math.round(rCount/count*100),
+    whiteRatio:Math.round(wCount/count*100),
+    yellowRatio:Math.round(yCount/count*100),
+    greenRatio:Math.round(gCount/count*100),
+    blueRatio:Math.round(bCount/count*100),
+    purpleRatio:Math.round(pCount/count*100),
+    darkRatio:Math.round(darkCount/count*100),
+    brightRatio:Math.round(brightCount/count*100),
+    totalPixels:count
+  };
+}
 
-      const result = await callAI(prompt, type==='vision' ? base64 : null);
+// ===== TONGUE ANALYSIS =====
+function analyzeTongue(colors){
+  const findings=[];
+  const temps={sauda:0,dam:0,balgham:0,soda:0};
 
-        const formatted = result.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        document.getElementById(type+'-result').innerHTML = `
-          <div class="card">
-            <h2>📊 نتیجه تحلیل ${type === 'tongue' ? 'زبان' : 'عنبیه ' + (irisEye === 'right' ? 'راست' : 'چپ')}</h2>
-            <div class="ai-status" style="margin-bottom:12px"><div class="ai-dot"></div>تحلیل شده با HuggingFace AI</div>
-            <div style="font-size:.82rem;line-height:2">${formatted}</div>
-            <div class="warning-box" style="margin-top:12px">⚠️ تحلیل مبتنی بر AI — تشخیص قطعی نیست. با پرسش‌نامه ترکیب کنید.</div>
-          </div>`;
-        updateProducts();
-      } catch(err) {
-        document.getElementById(type+'-result').innerHTML = `<div class="card"><div class="danger-box">❌ خطا در اتصال: ${err.message}</div></div>`;
+  // Color
+  if(colors.avgR>180&&colors.avgG<100&&colors.avgB<100){
+    findings.push({icon:'🔴',title:'رنگ قرمز تیره',desc:'بدن زبان قرمز تیره — نشانه حرارت و التهاب. احتمال افزایش صفرا.',temp:'sauda',score:3});
+  }else if(colors.avgR>160&&colors.avgG>100&&colors.avgG<140){
+    findings.push({icon:'🩷',title:'رنگ صورتی روشن',desc:'رنگ صورتی طبیعی — تعادل نسبی خون و طبع.',temp:'dam',score:2});
+  }else if(colors.avgR>150&&colors.avgR<200&&colors.avgG>120){
+    findings.push({icon:'🟠',title:'رنگ نارنجی مایل',desc:'ترکیب گرمی — احتمال طبع دمی-صفراوی.',temp:'dam',score:2});
+  }else if(colors.avgR<130&&colors.avgG<130&&colors.avgB>130){
+    findings.push({icon:'🔵',title:'رنگ مایل به کبود',desc:'زبان کبود — احتمال سردی و سکون خون. سوداوی.',temp:'soda',score:3});
+  }else if(colors.avgR<140&&colors.avgLight>60){
+    findings.push({icon:'⚪',title:'رنگ رنگ‌پریده',desc:'بدن زبان پریده — کم‌خونی یا سردی طبع.',temp:'balgham',score:2});
+  }else{
+    findings.push({icon:'🩷',title:'رنگ معمولی',desc:'رنگ زبان در محدوده طبیعی.',temp:'dam',score:1});
+  }
+
+  // Coating (white = phlegm)
+  if(colors.whiteRatio>35){
+    findings.push({icon:'🤍',title:'پوشش سفید ضخیم',desc:`${colors.whiteRatio}% پوشش سفید — نشانه تجمع بلغم و رطوبت در بدن.`,temp:'balgham',score:3});
+  }else if(colors.whiteRatio>20){
+    findings.push({icon:'🤍',title:'پوشش سفید متوسط',desc:`${colors.whiteRatio}% پوشش — اندکی بلغم. نیاز به رژیم غذایی دارد.`,temp:'balgham',score:2});
+  }
+
+  // Yellow coating (damp heat)
+  if(colors.yellowRatio>25){
+    findings.push({icon:'💛',title:'پوشش زرد',desc:`${colors.yellowRatio}% زردی — گرمای ناشی از صفرا و سوءهاضمه.`,temp:'sauda',score:3});
+  }
+
+  // Purple (blood stasis / soda)
+  if(colors.purpleRatio>15){
+    findings.push({icon:'🟣',title:'لکه‌های بنفش/کبود',desc:`${colors.purpleRatio}% بنفش — سکون خون و سوداوی. نیاز به حرکت و گرما.`,temp:'soda',score:3});
+  }
+
+  // Moisture (light = dry vs bright = moist)
+  if(colors.brightRatio>50&&colors.whiteRatio<15){
+    findings.push({icon:'💧',title:'زبان مرطوب/تر',desc:'براقی زیاد — رطوبت بالا. بلغمی.',temp:'balgham',score:2});
+  }else if(colors.darkRatio>30&&colors.whiteRatio<10){
+    findings.push({icon:'🏜️',title:'زبان خشک',desc:'تیرگی و خشکی — سودی یا کم‌آبی.',temp:'soda',score:2});
+  }
+
+  // Size (bright + white = swollen)
+  if(colors.brightRatio>60&&colors.whiteRatio>25){
+    findings.push({icon:'👅',title:'زبان متورم',desc:'پهن و متورم — بلغم غالب. نیاز به کاهش رطوبت.',temp:'balgham',score:2});
+  }
+
+  // Hot side indicators
+  if(colors.redRatio>40){
+    findings.push({icon:'🔥',title:'قرمزی زیاد',desc:'قرمزی بالا — حرارت بالا. احتمال صفراوی.',temp:'sauda',score:2});
+  }
+
+  // Temperament calculation
+  const allScores=[temps.sauda,temps.dam,temps.balgham,temps.soda];
+  findings.forEach(f=>{temps[f.temp]+=f.score;});
+  const total=Object.values(temps).reduce((a,b)=>a+b,0)||1;
+  const pcts=[Math.round(temps.sauda/total*100),Math.round(temps.dam/total*100),Math.round(temps.balgham/total*100),Math.round(temps.soda/total*100)];
+  const names=['صفراوی','دمی','بلغمی','سوداوی'];
+  const dominant=names[pcts.indexOf(Math.max(...pcts))];
+
+  return{findings,temps,pcts,dominant,
+    colorSummary:{red:colors.redRatio,white:colors.whiteRatio,yellow:colors.yellowRatio,purple:colors.purpleRatio,bright:colors.brightRatio,dark:colors.darkRatio}
+  };
+}
+
+// ===== IRIS ANALYSIS =====
+function analyzeIris(colors){
+  const findings=[];
+  const temps={sauda:0,dam:0,balgham:0,soda:0};
+
+  // Eye color
+  if(colors.avgLight<25&&colors.avgSat>30){
+    findings.push({icon:'🟤',title:'عنبیه قهوه‌ای تیره',desc:'رنگ تیره — طبع گرم (دمی-صفراوی). کبد قوی.',temp:'dam',score:2});
+  }else if(colors.avgLight>40&&colors.avgSat<40){
+    findings.push({icon:'🔵',title:'عنبیه روشن',desc:'رنگ روشن — حساسیت بیشتر. بلغمی-سوداوی.',temp:'balgham',score:2});
+  }else if(colors.avgLight>30&&colors.avgLight<50){
+    findings.push({icon:'🟢',title:'عنبیه عسلی/سبز',desc:'ترکیب گرم و سرد — تعادل نسبی.',temp:'dam',score:2});
+  }else{
+    findings.push({icon:'🟤',title:'رنگ معمولی',desc:'رنگ عنبیه در محدوده طبیعی.',temp:'dam',score:1});
+  }
+
+  // Dark rings/spots (soda indicator)
+  if(colors.darkRatio>25){
+    findings.push({icon:'⚫',title:'نواحی تیره',desc:`${colors.darkRatio}% تیرگی — نقاط تیره در عنبیه می‌تواند نشانه سوداوی باشد.`,temp:'soda',score:3});
+  }
+
+  // Bright areas (inflammation)
+  if(colors.brightRatio>35){
+    findings.push({icon:'✨',title:'نواحی روشن',desc:'نواحی روشن — احتمال التهاب یا تجمع سموم. صفراوی.',temp:'sauda',score:2});
+  }
+
+  // Red/brown tones
+  if(colors.redRatio>20){
+    findings.push({icon:'🔴',title:'هاله قرمز/قهوه‌ای',desc:'رنگ قرمزی — حرارت اضافی. صفرا.',temp:'sauda',score:2});
+  }
+
+  // Yellow (liver)
+  if(colors.yellowRatio>20){
+    findings.push({icon:'💛',title:'هاله زرد',desc:'زردی اطراف عنبیه — نشانه مشکل کبدی.',temp:'sauda',score:2});
+  }
+
+  // Blue tones (cold)
+  if(colors.blueRatio>15){
+    findings.push({icon:'🔵',title:'هاله آبی',desc:'رنگ آبی — سردی و ضعف گردش خون. بلغمی-سوداوی.',temp:'balgham',score:2});
+  }
+
+  // White ring (cholesterol / aging)
+  if(colors.whiteRatio>15){
+    findings.push({icon:'⚪',title:'حلقه سفید',desc:'حلقه سفید اطراف عنبیه — ممکن است نشانه کلسترول بالا.',temp:'balgham',score:2});
+  }
+
+  // Temperament
+  findings.forEach(f=>{temps[f.temp]+=f.score;});
+  const total=Object.values(temps).reduce((a,b)=>a+b,0)||1;
+  const pcts=[Math.round(temps.sauda/total*100),Math.round(temps.dam/total*100),Math.round(temps.balgham/total*100),Math.round(temps.soda/total*100)];
+  const names=['صفراوی','دمی','بلغمی','سوداوی'];
+  const dominant=names[pcts.indexOf(Math.max(...pcts))];
+
+  return{findings,temps,pcts,dominant,
+    colorSummary:{red:colors.redRatio,white:colors.whiteRatio,yellow:colors.yellowRatio,blue:colors.blueRatio,bright:colors.brightRatio,dark:colors.darkRatio}
+  };
+}
+
+// ===== IMAGE PROCESSING =====
+function analyzeImage(type){
+  const file=document.getElementById(type+'-file').files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    document.getElementById(type+'-img').src=e.target.result;
+    document.getElementById(type+'-upload').style.display='none';
+    document.getElementById(type+'-preview').style.display='block';
+    document.getElementById(type+'-result').innerHTML='<div class="card"><div class="spinner"></div><p style="text-align:center">⏳ در حال تحلیل...</p></div>';
+
+    const img=new Image();
+    img.onload=function(){
+      const canvas=document.getElementById(type+'-canvas');
+      const ctx=canvas.getContext('2d');
+      // Resize for speed
+      const maxDim=200;
+      const ratio=Math.min(maxDim/img.width,maxDim/img.height);
+      canvas.width=Math.round(img.width*ratio);
+      canvas.height=Math.round(img.height*ratio);
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+      const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const colors=analyzeColors(imageData.data);
+
+      if(!colors){
+        document.getElementById(type+'-result').innerHTML='<div class="card"><div class="danger-box">❌ خطا در تحلیل تصویر</div></div>';
+        return;
       }
+
+      setTimeout(()=>{
+        let result;
+        if(type==='tongue') result=analyzeTongue(colors);
+        else result=analyzeIris(colors);
+
+        renderAnalysisResult(type,result,colors);
+        updateProducts();
+      },300);
+    };
+    img.src=e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// === Questionnaire ===
-const questions = [
-  {q:'دمای بدن — کف دست/پا', opts:['گرم و خشک','سرد','گرم و مرطوب','معتدل، گاهی سرد']},
-  {q:'خواب', opts:['کم، سبک، بیداری مکرر','زیاد و سنگین، سخت بیدار می‌شم','متوسط، راحت','کم ولی عمیق']},
-  {q:'گوارش', opts:['یبوست رایج','نرم/شل، گاهی اسهال','منظم روزانه','مدت‌دار و سخت']},
-  {q:'وزن', opts:['لاغر، سخت چاق می‌شم','چاق می‌شم حتی با کم‌خوری','متوسط، با رژیم کنترل','متوسط تا لاغر']},
-  {q:'پوست', opts:['خشک، زبر، تیره','چرب، جوش‌دار، براق','مرطوب، نرم، رنگ پریده','معتدل']},
-  {q:'مو', opts:['خشک، کم‌پشت','چرب، ریزش','نرم و پرپشت','معتدل']},
-  {q:'عرق', opts:['کم، بدبو','زیاد، بدبو','زیاد، بدون بو','متوسط']},
-  {q:'اشتها', opts:['زیاد، تحمل گرسنگی کم','زیاد، تحمل زیاد','متوسط','کم']},
-  {q:'دمای محیط مطلوب', opts:['سرد','گرم','خنک','معتدل']},
-  {q:'رفتار', opts:['عصبانی سریع','آرام، بی‌انگیزه','شاد، اجتماعی','جدی، گوشه‌گیر']},
-  {q:'صحبت', opts:['زیاد و سریع','آهسته و کم','زیاد و شاد','کم و جدی']},
-  {q:'حافظه', opts:['تیز و سریع','کند ولی عمیق','خوب ولی پراکنده','متوسط']},
+function renderAnalysisResult(type,result,colors){
+  const title=type==='tongue'?'زبان':'عنبیه '+(irisEye==='right'?'راست':'چپ');
+  let html=`<div class="card">
+    <h2>📊 تحلیل ${title}</h2>
+    <div style="font-size:.72rem;color:var(--tl);margin-bottom:12px">✅ تحلیل محلی — اطلاعات از گوشی خارج نشده</div>`;
+
+  // Color palette
+  html+=`<div style="margin-bottom:12px">
+    <div style="font-size:.78rem;font-weight:600;margin-bottom:6px">🎨 ترکیب رنگ تشخیص داده شده:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:.72rem">`;
+  const colorLabels={red:'🔴 قرمز',white:'⚪ سفید',yellow:'🟡 زرد',purple:'🟣 بنفش',blue:'🔵 آبی',bright:'✨ روشن',dark:'⚫ تیره'};
+  for(const[k,v] of Object.entries(result.colorSummary)){
+    if(v>5) html+=`<span style="background:#f0f0f0;padding:2px 8px;border-radius:8px">${colorLabels[k]||k}: ${v}%</span>`;
+  }
+  html+=`</div></div>`;
+
+  // Findings
+  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:12px 0 8px">🔎 یافته‌ها:</h3>`;
+  result.findings.forEach(f=>{
+    html+=`<div style="margin-bottom:10px;padding:10px;background:#f8f9fa;border-radius:8px;border-right:3px solid var(--p)">
+      <div style="font-weight:600;font-size:.82rem">${f.icon} ${f.title}</div>
+      <div style="font-size:.78rem;color:var(--tl);margin-top:4px;line-height:1.7">${f.desc}</div>
+    </div>`;
+  });
+
+  // Temperament meters
+  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:16px 0 8px">🧬 گرایش مزاجی:</h3>`;
+  html+=meterRow('صفراوی (گرم+خشک)',result.pcts[0],'#e76f51');
+  html+=meterRow('دمی (گرم+مرطوب)',result.pcts[1],'#f4a261');
+  html+=meterRow('بلغمی (سرد+مرطوب)',result.pcts[2],'#457b9d');
+  html+=meterRow('سوداوی (سرد+خشک)',result.pcts[3],'#264653');
+  html+=`<p style="margin-top:10px;font-weight:700;font-size:.9rem;color:var(--p)">طب غالب: ${result.dominant}</p>`;
+
+  // Lifestyle advice based on type
+  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:16px 0 8px">💡 توصیه‌ها:</h3>`;
+  html+=`<div style="font-size:.8rem;line-height:2">${getAdvice(result.dominant)}</div>`;
+
+  html+=`<div class="warning-box" style="margin-top:12px">⚠️ تحلیل مبتنی بر الگوریتم رنگ — تشخیص قطعی نیست. با پرسش‌نامه ترکیب کنید.</div>`;
+  html+=`</div>`;
+
+  document.getElementById(type+'-result').innerHTML=html;
+}
+
+function getAdvice(dominant){
+  const advice={
+    'صفراوی':'<div>🍽️ <strong>غذا:</strong> از غذاهای تند و چرب بپرهیزید. سبزیجات سرد مانند کاهو و خیار مفید است.</div><div>🏃 <strong>ورزش:</strong> ورزش سبک در ساعات خنک روز. شنا مفید است.</div><div>💧 <strong>آب:</strong> آب خنک با لیمو. از چای داغ بپرهیزید.</div><div>😴 <strong>خواب:</strong> ظهر نخوابید. شب زود بخوابید.</div>',
+    'دمی':'<div>🍽️ <strong>غذا:</strong> تعادل در خوردن. از غذاهای خیلی گرم و خیلی سرد پرهیزید.</div><div>🏃 <strong>ورزش:</strong> ورزش منظم و متوسط. پیاده‌روی عالی است.</div><div>💧 <strong>آب:</strong> آب ولرم با عسل.</div><div>😴 <strong>خواب:</strong> ۷-۸ ساعت خواب منظم.</div>',
+    'بلغمی':'<div>🍽️ <strong>غذا:</strong> غذاهای گرم و تند بخورید. زنجبیل، دارچین، فلفل مفید است.</div><div>🏃 <strong>ورزش:</strong> ورزش شدید و منظم ضروری است. دویدن عالی است.</div><div>💧 <strong>آب:</strong> آب گرم با دارچین. از آب سرد بپرهیزید.</div><div>😴 <strong>خواب:</strong> صبح زود بیدار شوید. بعدازظهر نخوابید.</div>',
+    'سوداوی':'<div>🍽️ <strong>غذا:</strong> غذاهای تازه و گرم بخورید. از غذاهای تخمیری و کهنه بپرهیزید.</div><div>🏃 <strong>ورزش:</strong> ورزش ملایم در هوای آزاد. یوگا مفید است.</div><div>💧 <strong>آب:</strong> آب گرم با عسل و لیمو.</div><div>😴 <strong>خواب:</strong> شب زود بخوابید. از بی‌خوابی پرهیزید.</div>'
+  };
+  return advice[dominant]||'';
+}
+
+// ===== QUESTIONNAIRE =====
+const questions=[
+  {q:'دمای بدن — کف دست/پا',opts:['گرم و خشک','سرد','گرم و مرطوب','معتدل، گاهی سرد']},
+  {q:'خواب',opts:['کم، سبک، بیداری مکرر','زیاد و سنگین، سخت بیدار می‌شم','متوسط، راحت','کم ولی عمیق']},
+  {q:'گوارش',opts:['یبوست رایج','نرم/شل، گاهی اسهال','منظم روزانه','مدت‌دار و سخت']},
+  {q:'وزن',opts:['لاغر، سخت چاق می‌شم','چاق می‌شم حتی با کم‌خوری','متوسط، با رژیم کنترل','متوسط تا لاغر']},
+  {q:'پوست',opts:['خشک، زبر، تیره','چرب، جوش‌دار، براق','مرطوب، نرم، رنگ پریده','معتدل']},
+  {q:'مو',opts:['خشک، کم‌پشت','چرب، ریزش','نرم و پرپشت','معتدل']},
+  {q:'عرق',opts:['کم، بدبو','زیاد، بدبو','زیاد، بدون بو','متوسط']},
+  {q:'اشتها',opts:['زیاد، تحمل گرسنگی کم','زیاد، تحمل زیاد','متوسط','کم']},
+  {q:'دمای محیط مطلوب',opts:['سرد','گرم','خنک','معتدل']},
+  {q:'رفتار',opts:['عصبانی سریع','آرام، بی‌انگیزه','شاد، اجتماعی','جدی، گوشه‌گیر']},
+  {q:'صحبت',opts:['زیاد و سریع','آهسته و کم','زیاد و شاد','کم و جدی']},
+  {q:'حافظه',opts:['تیز و سریع','کند ولی عمیق','خوب ولی پراکنده','متوسط']},
 ];
 
-function initQuestionnaire() {
-  const c = document.getElementById('q-container');
-  const letters = ['الف','ب','ج','د'];
-  let html = '';
-  questions.forEach((q,i) => {
-    html += `<div class="q-item"><h3><span class="num">${i+1}</span>${q.q}</h3><div class="options">`;
-    q.opts.forEach((o,j) => {
-      html += `<div class="opt" onclick="selectAnswer(${i},${j},this)"><span class="letter">${letters[j]}</span>${o}</div>`;
+function initQuestionnaire(){
+  const c=document.getElementById('q-container');
+  const letters=['الف','ب','ج','د'];
+  let html='';
+  questions.forEach((q,i)=>{
+    html+=`<div class="q-item"><h3><span class="num">${i+1}</span>${q.q}</h3><div class="options">`;
+    q.opts.forEach((o,j)=>{
+      html+=`<div class="opt" onclick="selectAnswer(${i},${j},this)"><span class="letter">${letters[j]}</span>${o}</div>`;
     });
-    html += `</div></div>`;
+    html+=`</div></div>`;
   });
-  c.innerHTML = html;
+  c.innerHTML=html;
 }
 
-function selectAnswer(qi,oi,el) {
-  questionnaireAnswers[qi] = oi;
+function selectAnswer(qi,oi,el){
+  questionnaireAnswers[qi]=oi;
   el.closest('.options').querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
-  const answered = Object.keys(questionnaireAnswers).length;
-  document.getElementById('q-progress').style.width = (answered/questions.length*100)+'%';
-  document.getElementById('q-submit').style.display = answered===questions.length?'flex':'none';
+  const answered=Object.keys(questionnaireAnswers).length;
+  document.getElementById('q-progress').style.width=(answered/questions.length*100)+'%';
+  document.getElementById('q-submit').style.display=answered===questions.length?'flex':'none';
 }
 
-async function submitQuestionnaire() {
-  document.getElementById('q-submit').disabled = true;
-  document.getElementById('q-submit').innerHTML = '<div class="spinner" style="width:20px;height:20px;margin:0"></div> در حال تحلیل...';
+function submitQuestionnaire(){
+  document.getElementById('q-submit').disabled=true;
+  document.getElementById('q-submit').innerHTML='<div class="spinner" style="width:20px;height:20px;margin:0"></div> محاسبه...';
 
-  // Local calculation
-  let scores = [0,0,0,0]; // Sauda, Dam, Balgham, Soda
-  questions.forEach((q,i) => { const ans = questionnaireAnswers[i]; if(ans!==undefined) scores[ans]++; });
-  const total = scores.reduce((a,b)=>a+b,0);
-  const pcts = scores.map(s=>Math.round(s/total*100));
-  const dominant = ['صفراوی','دمی','بلغمی','سوداوی'][pcts.indexOf(Math.max(...pcts))];
+  let scores=[0,0,0,0];
+  questions.forEach((q,i)=>{const ans=questionnaireAnswers[i];if(ans!==undefined)scores[ans]++;});
+  const total=scores.reduce((a,b)=>a+b,0);
+  const pcts=scores.map(s=>Math.round(s/total*100));
+  const dominant=['صفراوی','دمی','بلغمی','سوداوی'][pcts.indexOf(Math.max(...pcts))];
+  temperamentResult={sauda:pcts[0],dam:pcts[1],balgham:pcts[2],soda:pcts[3],dominant};
 
-  temperamentResult = {sauda:pcts[0],dam:pcts[1],balgham:pcts[2],soda:pcts[3],dominant};
+  let html=`<div class="card"><h2>🧬 نتیجه پرسش‌نامه</h2>`;
+  html+=meterRow('صفراوی (گرم+خشک)',pcts[0],'#e76f51');
+  html+=meterRow('دمی (گرم+مرطوب)',pcts[1],'#f4a261');
+  html+=meterRow('بلغمی (سرد+مرطوب)',pcts[2],'#457b9d');
+  html+=meterRow('سوداوی (سرد+خشک)',pcts[3],'#264653');
+  html+=`<p style="margin-top:10px;font-weight:700;font-size:.95rem;color:var(--p)">طب غالب: ${dominant}</p>`;
 
-  // Get AI interpretation
-  try {
-    const answers = questions.map((q,i) => `${i+1}. ${q.q}: ${q.opts[questionnaireAnswers[i]]||'نامشخص'}`).join('\n');
-    const aiText = await callAI(`تو یک متخصص طب سنتی هستی. نتایج پرسش‌نامه مزاج یک بیمار:
+  // Interpretation
+  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:16px 0 8px">📖 تفسیر:</h3>`;
+  html+=`<div style="font-size:.82rem;line-height:2">${getInterpretation(dominant,pcts)}</div>`;
+  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:16px 0 8px">💡 توصیه‌ها:</h3>`;
+  html+=`<div style="font-size:.8rem;line-height:2">${getAdvice(dominant)}</div>`;
+  html+=`</div>`;
 
-${answers}
-
-ترکیب طبع: صفراوی ${pcts[0]}%، دمی ${pcts[1]}%، بلغمی ${pcts[2]}%، سوداوی ${pcts[3]}%
-طب غالب: ${dominant}
-
-لطفاً:
-۱. تفسیر کلی مزاج
-۲. نقاط قوت و ضعف
-۳. توصیه‌های غذایی
-۴. سبک زندگی پیشنهادی
-۵. محصولات نیوشانک مناسب
-
-به فارسی و با ایموجی پاسخ بده.`);
-  } catch(e) { var aiText = 'خطا در تحلیل AI'; }
-
-  let html = `<div class="card"><h2>🧬 نتیجه پرسش‌نامه</h2>`;
-  html += meterRow('صفراوی (گرم+خشک)',pcts[0],'#e76f51');
-  html += meterRow('دمی (گرم+مرطوب)',pcts[1],'#f4a261');
-  html += meterRow('بلغمی (سرد+مرطوب)',pcts[2],'#457b9d');
-  html += meterRow('سوداوی (سرد+خشک)',pcts[3],'#264653');
-  html += `<p style="margin-top:10px;font-weight:700;font-size:.95rem;color:var(--p)">طب غالب: ${dominant}</p>`;
-  if (aiText) {
-    html += `<div class="ai-status" style="margin:10px 0"><div class="ai-dot"></div>تفسیر AI</div>`;
-    html += `<div style="font-size:.82rem;line-height:2">${aiText.replace(/\n/g,'<br>')}</div>`;
-  }
-  html += `</div>`;
-  document.getElementById('q-result').innerHTML = html;
-  document.getElementById('q-submit').disabled = false;
-  document.getElementById('q-submit').innerHTML = '🔍 محاسبه مزاج با AI';
+  document.getElementById('q-result').innerHTML=html;
+  document.getElementById('q-submit').disabled=false;
+  document.getElementById('q-submit').innerHTML='🔍 محاسبه مزاج';
   updateProducts();
 }
 
-// === Products ===
-const products = [
+function getInterpretation(dominant,pcts){
+  const interp={
+    'صفراوی':'<p>🔥 شما دارای مزاج <strong>صفراوی</strong> هستید — گرم و خشک.</p><p>✅ نقاط قوت: هوشیاری بالا، انرژی زیاد، تصمیم‌گیری سریع.</p><p>⚠️ نقاط ضعف: استرس، عصبانیت، التهاب پوستی.</p><p>🍽️ غذاهای مناسب: سبزجات تازه، میوه‌های سرد، ماست و خیار.</p><p>🚫 غذاهای مضر: تندی، سرخ‌کردنی، قهوه.</p>',
+    'دمی':'<p>💧 شما دارای مزاج <strong>دمی</strong> هستید — گرم و مرطوب.</p><p>✅ نقاط قوت: شادابی، اجتماعی بودن، قدرت بدنی خوب.</p><p>⚠️ نقاط ضعف: التهاب، خونریزی، حساسیت.</p><p>🍽️ غذاهای مناسب: غذاهای متعادل، سبزجات پخته.</p><p>🚫 غذاهای مضر: غذاهای خیلی چرب و شور.</p>',
+    'بلغمی':'<p>❄️ شما دارای مزاج <strong>بلغمی</strong> هستید — سرد و مرطوب.</p><p>✅ نقاط قوت: صبر، آرامش، تحمل بالا.</p><p>⚠️ نقاط ضعف: کم‌حرکتی، اضافه وزن، افسردگی.</p><p>🍽️ غذاهای مناسب: زنجبیل، دارچین، غذاهای تند و گرم.</p><p>🚫 غذاهای مضر: شیرینی، نان سفید، آب سرد.</p>',
+    'سوداوی':'<p>🌑 شما دارای مزاج <strong>سوداوی</strong> هستید — سرد و خشک.</p><p>✅ نقاط قوت: تحلیل‌گر، خلاق، حافظه قوی.</p><p>⚠️ نقاط ضعف: افسردگی، بی‌خوابی، خشکی پوست.</p><p>🍽️ غذاهای مناسب: غذاهای تازه و گرم، عسل.</p><p>🚫 غذاهای مضر: غذاهای تخمیری، کافئین.</p>'
+  };
+  return interp[dominant]||'';
+}
+
+// ===== PRODUCTS =====
+const products=[
   {name:'دمنوش آرامش',icon:'🌙',color:'#e8eaf6',type:'آرامش',tags:['دمی','بلغمی'],desc:'سنبل‌الطیب، بابونه، اسطوخودوس — مناسب شب',warn:'ناشتا ندهید — آرام‌بخش است'},
   {name:'دمنوش هضم',icon:'🍵',color:'#e8f5e9',type:'گوارش',tags:['بلغمی','دمی'],desc:'بادرشبو، نعناع، رازیانه — تقویت معده'},
   {name:'دمنوش انرژی',icon:'⚡',color:'#fff3e0',type:'انرژی',tags:['سوداوی','بلغمی'],desc:'چای سبز، دارچین، زنجبیل — شادابی'},
@@ -348,40 +535,37 @@ const products = [
   {name:'چای سبز نعناعی',icon:'🍃',color:'#e8f5e9',type:'متابولیسم',tags:['دمی','صفراوی'],desc:'متابولیسم + هضم'},
 ];
 
-function updateProducts() {
-  let tags = ['همه'];
-  if (temperamentResult) {
-    const d = temperamentResult.dominant;
-    if(d==='صفراوی') tags=['صفراوی'];else if(d==='دمی') tags=['دمی'];else if(d==='بلغمی') tags=['بلغمی'];else if(d==='سوداوی') tags=['سوداوی'];
+function updateProducts(){
+  let tags=['همه'];
+  if(temperamentResult){
+    tags=[temperamentResult.dominant];
   }
-  const matched = products.filter(p=>p.tags.some(t=>tags.includes(t)||t==='همه'));
-  const others = products.filter(p=>!p.tags.some(t=>tags.includes(t)||t==='همه'));
-  let html = '';
+  const matched=products.filter(p=>p.tags.some(t=>tags.includes(t)||t==='همه'));
+  const others=products.filter(p=>!p.tags.some(t=>tags.includes(t)||t==='همه'));
+  let html='';
   if(matched.length){html+=`<div class="card"><h2>✅ پیشنهاد ویژه</h2>`;matched.forEach(p=>html+=pCard(p));html+=`</div>`;}
   if(others.length){html+=`<div class="card"><h2>📦 سایر</h2>`;others.forEach(p=>html+=pCard(p));html+=`</div>`;}
-  document.getElementById('products-list').innerHTML = html || '<div class="card"><p>ابتدا پرسش‌نامه یا تحلیل عکس انجام دهید.</p></div>';
+  document.getElementById('products-list').innerHTML=html||'<div class="card"><p>ابتدا پرسش‌نامه یا تحلیل عکس انجام دهید.</p></div>';
 }
-
 function pCard(p){
-  return `<div class="product-card" onclick="showProduct('${p.name}')">
+  return`<div class="product-card" onclick="showProduct('${p.name}')">
     <div class="icon" style="background:${p.color}">${p.icon}</div>
     <div class="info"><h4>${p.name} <span class="badge badge-n">${p.type}</span></h4><p>${p.desc.substring(0,60)}...</p></div></div>`;
 }
-
 function showProduct(name){
   const p=products.find(x=>x.name===name);if(!p)return;
   let h=`<h2>${p.icon} ${p.name}</h2><p style="margin:12px 0;line-height:1.8">${p.desc}</p>`;
-  if(p.warn) h+=`<div class="danger-box">⚠️ ${p.warn}</div>`;
+  if(p.warn)h+=`<div class="danger-box">⚠️ ${p.warn}</div>`;
   h+=`<div class="warning-box">💡 با مشورت مشاور استفاده شود.</div>`;
   document.getElementById('modal-content').innerHTML=h;
   document.getElementById('modal-overlay').classList.add('show');
 }
 
 function meterRow(label,value,color){
-  return `<div class="meter-label"><span>${label}</span><span>${value}%</span></div><div class="meter"><div class="meter-fill" style="width:${value}%;background:${color}"></div></div>`;
+  return`<div class="meter-label"><span>${label}</span><span>${value}%</span></div><div class="meter"><div class="meter-fill" style="width:${value}%;background:${color}"></div></div>`;
 }
 
-// === Init ===
+// ===== INIT =====
 initQuestionnaire();
 updateProducts();
 </script>
