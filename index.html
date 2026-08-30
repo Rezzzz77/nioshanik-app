@@ -240,6 +240,7 @@ function rgbToHsl(r,g,b){
 function analyzePixels(data){
   var stats={total:0,
     red:0,orange:0,yellow:0,green:0,blue:0,purple:0,pink:0,brown:0,
+    realRed:0,realOrange:0,realYellow:0,realGreen:0,realBlue:0,realPurple:0,realPink:0,
     white:0,black:0,grey:0,
     dark:0,bright:0,saturated:0,desaturated:0,
     warm:0,cool:0,
@@ -282,6 +283,16 @@ function analyzePixels(data){
     else if(h<280)stats.purple++;
     else if(h<345)stats.pink++;
     if(h>15&&h<50&&l<40)stats.brown++;
+    
+    // REAL color (saturated) — used for organ detection
+    if(s>=25){
+      if(h<15||h>345)stats.realRed++;
+      else if(h<70)stats.realOrange++;
+      else if(h<165)stats.realGreen++;
+      else if(h<200)stats.realBlue++;
+      else if(h<280)stats.realPurple++;
+      else stats.realPink++;
+    }
   }
   var t=stats.total||1;
   return{
@@ -295,7 +306,11 @@ function analyzePixels(data){
       white:Math.round(stats.white/t*100),black:Math.round(stats.black/t*100),grey:Math.round(stats.grey/t*100),
       dark:Math.round(stats.dark/t*100),bright:Math.round(stats.bright/t*100),
       saturated:Math.round(stats.saturated/t*100),desaturated:Math.round(stats.desaturated/t*100),
-      warm:Math.round(stats.warm/t*100),cool:Math.round(stats.cool/t*100)
+      warm:Math.round(stats.warm/t*100),cool:Math.round(stats.cool/t*100),
+      realRed:Math.round(stats.realRed/t*100),realPink:Math.round(stats.realPink/t*100),
+      realOrange:Math.round(stats.realOrange/t*100),realYellow:Math.round(stats.realYellow/t*100),
+      realGreen:Math.round(stats.realGreen/t*100),realBlue:Math.round(stats.realBlue/t*100),
+      realPurple:Math.round(stats.realPurple/t*100)
     },
     hueHist:stats.hueHist.map(function(v){return Math.round(v/t*100)})
   };
@@ -341,6 +356,19 @@ function analyze(type){
       ctx.drawImage(img,0,0,cv.width,cv.height);
       var px=analyzePixels(ctx.getImageData(0,0,cv.width,cv.height).data);
       var pixelText=formatPixelData(px);
+      
+      // ORGAN DETECTION GATE — reject non-organ photos (wall etc.)
+      var cpx=analyzePixels(ctx.getImageData(Math.round(cv.width*.25),Math.round(cv.height*.25),Math.round(cv.width*.5),Math.round(cv.height*.5)).data);
+      var centerRed=cpx.pct.realRed+cpx.pct.realPink;
+      var totRed=px.pct.realRed+px.pct.realPink;
+      var darkCenter=cpx.pct.dark+cpx.pct.black;
+      var looksOrgan;
+      if(type==='tongue')looksOrgan=(totRed>=18&&centerRed>=35);
+      else looksOrgan=(darkCenter>=2&&darkCenter<=60&&(px.pct.white+px.pct.bright)>=8&&px.pct.grey<60);
+      if(!looksOrgan){
+        $(type==='tongue'?'t-res':'i-res').innerHTML='<div class="card"><h2>🚫 عکس نامناسب</h2><div class="danger">'+(type==='tongue'?'❌ این عکس شبیه زبان نیست.':'❌ این عکس شبیه چشم (عنبیه) نیست.')+'</div><p style="font-size:.8rem;line-height:2">'+(type==='tongue'?'✅ زبان را بیرون آورید و عکس نزدیک بگیرید<br>✅ نور طبیعی، بدون فیلتر':'✅ عکس نزدیک از چشم باز بگیرید<br>✅ نور کافی، نگاه مستقیم به دوربین')+'</p></div>';
+        return;
+      }
       
       $(type==='tongue'?'t-img':'i-img').src=e.target.result;
       $(type==='tongue'?'t-up':'i-up').style.display='none';
