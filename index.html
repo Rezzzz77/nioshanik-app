@@ -142,10 +142,10 @@ var DIRECT_URL='https://9router-production-2452.up.railway.app/v1/chat/completio
 var WORKER_URL='https://nioshanik-ai.arshadirad7475.workers.dev/v1/chat/completions';
 var API_KEY='sk-084a5cb1ed1c4ce9-xv2h6u-0c61df38';
 
-function streamModel(base, model, prompt, finish, capMs) {
+function streamModel(base, model, prompt, finish, capMs, sys) {
   var ctrl=new AbortController();
   var timer=setTimeout(function(){ctrl.abort()},capMs||90000);
-  var body=JSON.stringify({model:model,messages:[{role:'system',content:'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
+  var body=JSON.stringify({model:model,messages:[{role:'system',content:sys||'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
   fetch(base,{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
@@ -184,7 +184,49 @@ function streamModel(base, model, prompt, finish, capMs) {
   }).catch(function(){clearTimeout(timer);finish(null)});
 }
 
+/* === TRAINING DATA (RAG-lite) === */
+var TRAIN_KB=[];
+function normSample(s){
+  if(typeof s==='string')return s;
+  if(s&&Array.isArray(s.samples))return s.samples.map(normSample);
+  if(s&&(s.q||s.question)&&(s.a||s.answer))return 'س: '+(s.q||s.question)+'\nج: '+(s.a||s.answer);
+  return null;
+}
+function loadTraining(){
+  try{var c=JSON.parse(localStorage.getItem('train_kb')||'0');if(c&&c.kb&&Date.now()-c.t<864e5){TRAIN_KB=c.kb;return}}catch(e){}
+  fetch('https://api.github.com/repos/Rezzzz77/nioshanik-app/contents/data',{headers:{Accept:'application/vnd.github+json'}})
+    .then(function(r){return r.ok?r.json():Promise.reject()})
+    .then(function(list){
+      var files=list.filter(function(f){return f.name.slice(-5)==='.json'&&f.size<300000}).slice(0,10);
+      return Promise.all(files.map(function(f){return fetch(f.url).then(function(r){return r.json()}).then(function(j){
+        var arr=JSON.parse(atob(j.content.replace(/\n/g,'')));
+        return (Array.isArray(arr)?arr:[arr]).map(normSample).filter(Boolean);
+      }).catch(function(){return []})}));
+    })
+    .then(function(arrs){
+      TRAIN_KB=[].concat.apply([],[].concat.apply([],arrs).map(normSample));
+      TRAIN_KB=TRAIN_KB.filter(function(x){return x&&typeof x==='string'});
+      if(TRAIN_KB.length)try{localStorage.setItem('train_kb',JSON.stringify({t:Date.now(),kb:TRAIN_KB}))}catch(e){}
+    })
+    .catch(function(){});
+}
+function trainContext(prompt){
+  if(!TRAIN_KB.length)return '';
+  var words=prompt.toLowerCase().replace(/[^\u0600-\u06FF\w\s]/g,' ').split(/\s+/).filter(function(w){return w.length>3});
+  var scored=TRAIN_KB.map(function(s,i){
+    var t=s.toLowerCase(),sc=0;words.forEach(function(w){if(t.indexOf(w)>=0)sc+=2});
+    return {t:s,s:sc,i:i};
+  }).sort(function(a,b){return b.s-a.s||a.i-b.i}).slice(0,3);
+  var out=scored.filter(function(x){return x.s>0}).map(function(x){return x.t});
+  if(!out.length)out=scored.map(function(x){return x.t});
+  var txt=out.join('\n---\n');
+  return txt.length>2400?txt.slice(0,2400):txt;
+}
+
 function callAI(prompt) {
+  var sysPrompt='تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.';
+  var kb=trainContext(prompt);
+  if(kb)sysPrompt+='\n\n📚 دانش مرجع (بر اساس آن پاسخ بده، به آن پایبند باش):\n'+kb;
   return new Promise(function(final) {
     var pending=4,won=false,bestReasoning='';
     function finish(v){
@@ -193,10 +235,10 @@ function callAI(prompt) {
       else if(v&&v.length>bestReasoning.length)bestReasoning=v;
       if(!won&&--pending===0){won=true;final(bestReasoning||null)}
     }
-    streamModel(WORKER_URL,'Rezzz',prompt,finish);
-    streamModel(WORKER_URL,'Openouter',prompt,finish);
-    streamModel(WORKER_URL,'B',prompt,finish);
-    streamModel(WORKER_URL,'gem',prompt,finish);
+    streamModel(WORKER_URL,'Rezzz',prompt,finish,0,sysPrompt);
+    streamModel(WORKER_URL,'Openouter',prompt,finish,0,sysPrompt);
+    streamModel(WORKER_URL,'B',prompt,finish,0,sysPrompt);
+    streamModel(WORKER_URL,'gem',prompt,finish,0,sysPrompt);
   });
 }
 
@@ -206,6 +248,7 @@ function setAI(st){
   t.textContent=st==='ok'?'✅ هوش مصنوعی فعال':st==='off'?'🔴 آفلاین — تحلیل محلی':'⏳ اتصال هوش مصنوعی...';
 }
 function probeAI(try2){
+  loadTraining();
   streamModel(WORKER_URL,try2?'Openouter':'Rezzz','فقط بگو فعال',function(r){
     if(r)setAI('ok');else if(!try2)probeAI(true);else setAI('off');
   },15000);
