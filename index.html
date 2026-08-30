@@ -140,49 +140,61 @@ var DIRECT_URL='https://9router-production-2452.up.railway.app/v1/chat/completio
 var WORKER_URL='https://nioshanik-ai.arshadirad7475.workers.dev/v1/chat/completions';
 var API_KEY='sk-084a5cb1ed1c4ce9-xv2h6u-0c61df38';
 
-function callAI(prompt, tries) {
-  tries = tries || 0;
-  var attempts=[
-    {u:WORKER_URL,m:'B'},{u:WORKER_URL,m:'gem'},{u:WORKER_URL,m:'Rezzz'},
-    {u:DIRECT_URL,m:'B'},{u:DIRECT_URL,m:'Rezzz'},{u:DIRECT_URL,m:'gem'},{u:DIRECT_URL,m:'Openouter'}
-  ];
-  var a=attempts[tries]||attempts[0];
-  return new Promise(function(ok) {
-    var body = JSON.stringify({model:a.m,messages:[{role:'system',content:'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
-    var ctrl = new AbortController();
-    var timer = setTimeout(function(){ctrl.abort()}, 45000);
-    fetch(a.u,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
-      body:body,signal:ctrl.signal
-    }).then(function(r){
-      clearTimeout(timer);
-      if(!r.ok){ok(tries<6?callAI(prompt,tries+1):null);return}
-      var reader=r.body.getReader(),dec=new TextDecoder(),full='',reasoning='',buf='';
-      (function read(){
-        reader.read().then(function(res){
-          if(res.done){
-            var best=full.trim()||reasoning.trim();
-            ok(best||(tries<6?callAI(prompt,tries+1):null));
-            return;
-          }
-          buf+=dec.decode(res.value,{stream:true});
-          var lines=buf.split('\n');
-          buf=lines.pop();
-          lines.forEach(function(l){
-            if(l.indexOf('data: ')!==0)return;
-            var j=l.slice(6).trim();
-            if(j==='[DONE]')return;
-            try{
-              var d=JSON.parse(j),del=d.choices&&d.choices[0]&&d.choices[0].delta||{};
-              if(del.content)full+=del.content;
-              if(del.reasoning_content)reasoning+=del.reasoning_content;
-            }catch(e){}
-          });
-          read();
-        }).catch(function(){var best=full.trim()||reasoning.trim();ok(best||(tries<6?callAI(prompt,tries+1):null))});
-      })();
-    }).catch(function(){clearTimeout(timer);ok(tries<6?callAI(prompt,tries+1):null)});
+function streamModel(base, model, prompt, finish, capMs) {
+  var ctrl=new AbortController();
+  var timer=setTimeout(function(){ctrl.abort()},capMs||90000);
+  var body=JSON.stringify({model:model,messages:[{role:'system',content:'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
+  fetch(base,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+    body:body,signal:ctrl.signal
+  }).then(function(r){
+    if(!r.ok){clearTimeout(timer);finish(null);return}
+    var reader=r.body.getReader(),dec=new TextDecoder(),full='',reasoning='',buf='';
+    (function read(){
+      reader.read().then(function(res){
+        if(res.done){
+          clearTimeout(timer);
+          var best=full.trim()||reasoning.trim();
+          finish(best||null);
+          return;
+        }
+        buf+=dec.decode(res.value,{stream:true});
+        var lines=buf.split('\n');
+        buf=lines.pop();
+        lines.forEach(function(l){
+          if(l.indexOf('data: ')!==0)return;
+          var j=l.slice(6).trim();
+          if(j==='[DONE]')return;
+          try{
+            var d=JSON.parse(j),del=d.choices&&d.choices[0]&&d.choices[0].delta||{};
+            if(del.content)full+=del.content;
+            if(del.reasoning_content)reasoning+=del.reasoning_content;
+          }catch(e){}
+        });
+        read();
+      }).catch(function(){
+        clearTimeout(timer);
+        var best=full.trim()||reasoning.trim();
+        finish(best||null);
+      });
+    })();
+  }).catch(function(){clearTimeout(timer);finish(null)});
+}
+
+function callAI(prompt) {
+  return new Promise(function(final) {
+    var pending=4,won=false,bestReasoning='';
+    function finish(v){
+      if(won)return;
+      if(v&&!/^[\sA-Za-z0-9.,;:()\-+*/=<>\[\]{}"']*$/.test(v)&&v.length>10){won=true;final(v)}
+      else if(v&&v.length>bestReasoning.length)bestReasoning=v;
+      if(!won&&--pending===0){won=true;final(bestReasoning||null)}
+    }
+    streamModel(WORKER_URL,'Rezzz',prompt,finish);
+    streamModel(WORKER_URL,'Openouter',prompt,finish);
+    streamModel(WORKER_URL,'B',prompt,finish);
+    streamModel(WORKER_URL,'gem',prompt,finish);
   });
 }
 
