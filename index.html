@@ -141,10 +141,10 @@ var API_KEY='sk-084a5cb1ed1c4ce9-xv2h6u-0c61df38';
 
 function callAI(prompt, tries) {
   tries = tries || 0;
-  var models = ['gem','Openouter','Rezzz','Mohta'];
+  var models = ['gem','Openouter','Rezzz','Mohta','ag/gemini-3.6-flash-medium','openrouter/minimax/minimax-m3:free','B'];
   var model = models[tries] || models[0];
   return new Promise(function(ok) {
-    var body = JSON.stringify({model:model,messages:[{role:'user',content:prompt}],max_tokens:2048,stream:true});
+    var body = JSON.stringify({model:model,messages:[{role:'system',content:'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
     var ctrl = new AbortController();
     var timer = setTimeout(function(){ctrl.abort()}, 45000);
     fetch(API_URL,{
@@ -153,11 +153,11 @@ function callAI(prompt, tries) {
       body:body,signal:ctrl.signal
     }).then(function(r){
       clearTimeout(timer);
-      if(!r.ok){ok(tries<3?callAI(prompt,tries+1):null);return}
+      if(!r.ok){ok(tries<6?callAI(prompt,tries+1):null);return}
       var reader=r.body.getReader(),dec=new TextDecoder(),full='';
       (function read(){
         reader.read().then(function(res){
-          if(res.done){ok(full||(tries<3?callAI(prompt,tries+1):null));return}
+          if(res.done){ok(full||(tries<6?callAI(prompt,tries+1):null));return}
           var ch=dec.decode(res.value,{stream:true});
           ch.split('\n').forEach(function(l){
             if(l.indexOf('data: ')!==0)return;
@@ -166,9 +166,9 @@ function callAI(prompt, tries) {
             try{var d=JSON.parse(j);full+=d.choices[0].delta.content||''}catch(e){}
           });
           read();
-        }).catch(function(){ok(full||(tries<3?callAI(prompt,tries+1):null))});
+        }).catch(function(){ok(full||(tries<6?callAI(prompt,tries+1):null))});
       })();
-    }).catch(function(){clearTimeout(timer);ok(tries<3?callAI(prompt,tries+1):null)});
+    }).catch(function(){clearTimeout(timer);ok(tries<6?callAI(prompt,tries+1):null)});
   });
 }
 
