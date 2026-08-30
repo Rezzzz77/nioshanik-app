@@ -317,17 +317,21 @@ function formatPixelData(px){
 
 /* === IMAGE ANALYSIS === */
 function analyze(type){
-  var file=$(type==='tongue'?'t-file':'i-file').files[0];
+  var inp=$(type==='tongue'?'t-file':'i-file');
+  var file=inp.files[0];
   if(!file)return;
+  inp.value='';
   var reader=new FileReader();
+  reader.onerror=function(){
+    $(type==='tongue'?'t-res':'i-res').innerHTML='<div class="card"><div class="danger">⚠️ فایل خوانده نشد — دوباره تلاش کنید.</div></div>';
+  };
   reader.onload=function(e){
-    $(type==='tongue'?'t-img':'i-img').src=e.target.result;
-    $(type==='tongue'?'t-up':'i-up').style.display='none';
-    $(type==='tongue'?'t-pv':'i-pv').style.display='block';
-    $(type==='tongue'?'t-res':'i-res').innerHTML='<div class="card"><div class="spinner"></div><p style="text-align:center">⏳ تحلیل پیکسلی...</p></div>';
-    
     var img=new Image();
+    img.onerror=function(){
+      $(type==='tongue'?'t-res':'i-res').innerHTML='<div class="card"><div class="danger">⚠️ فرمت عکس پشتیبانی نمی‌شود — JPG یا PNG بفرستید.</div></div>';
+    };
     img.onload=function(){
+      try{
       // STEP 1: Pixel analysis (Python-style)
       var cv=$(type==='tongue'?'t-cv':'i-cv');
       var ctx=cv.getContext('2d');
@@ -338,7 +342,9 @@ function analyze(type){
       var px=analyzePixels(ctx.getImageData(0,0,cv.width,cv.height).data);
       var pixelText=formatPixelData(px);
       
-      // Show local results immediately
+      $(type==='tongue'?'t-img':'i-img').src=e.target.result;
+      $(type==='tongue'?'t-up':'i-up').style.display='none';
+      $(type==='tongue'?'t-pv':'i-pv').style.display='block';
       var localHTML='<div class="card"><h2>📊 تحلیل پیکسلی '+(type==='tongue'?'زبان':'عنبیه')+'</h2>';
       localHTML+='<div class="clr-grid">';
       var top=Object.entries(px.pct).sort(function(a,b){return b[1]-a[1]}).slice(0,6);
@@ -372,7 +378,7 @@ function analyze(type){
       }
       
       callAI(prompt).then(function(result){
-        if(result){
+        if(result&&!aiBad(result)){
           var fmt=result.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
           $(type==='tongue'?'t-res':'i-res').innerHTML=
             '<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'زبان':'عنبیه')+'</h2>'+
@@ -388,11 +394,16 @@ function analyze(type){
             localFallback(type,px)+'</div>';
         }
       });
+      }catch(err){
+        $(type==='tongue'?'t-res':'i-res').innerHTML='<div class="card"><div class="danger">⚠️ خطا در تحلیل: '+(err&&err.message||err)+'</div></div>';
+      }
     };
     img.src=e.target.result;
   };
   reader.readAsDataURL(file);
 }
+
+function aiBad(t){return !t||/^[\sA-Za-z0-9.,;:()\-+*/=<>&\[\]{}"']*$/i.test(t)}
 
 function localFallback(type,px){
   var r='<div style="font-size:.82rem;line-height:2;margin-top:8px">';
@@ -491,7 +502,7 @@ function calcQ(){
     html+=mRow('بلغمی',pct[2],'#457b9d');
     html+=mRow('سوداوی',pct[3],'#264653');
     html+='<p style="margin-top:8px;font-weight:700;color:var(--p)">طب غالب: '+dom+'</p>';
-    if(aiText){
+    if(aiText&&!aiBad(aiText)){
       html+='<div class="ai-tag"><div class="ai-dot"></div>تفسیر AI</div>';
       html+='<div style="font-size:.82rem;line-height:2">'+aiText.replace(/\n/g,'<br>')+'</div>';
     } else {
