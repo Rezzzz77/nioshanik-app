@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" yes>
 <meta name="theme-color" content="#1b4332">
 <title>مشاور نیوشانک</title>
 <style>
@@ -11,52 +11,53 @@
 :root{--p:#2d6a4f;--pl:#40916c;--pd:#1b4332;--a:#d4a373;--bg:#f8f9fa;--c:#fff;--t:#1a1a2e;--tl:#666;--r:#e63946;--w:#fff3cd;--wb:#ffc107}
 body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--t);min-height:100dvh}
 .app{max-width:480px;margin:0 auto;padding-bottom:80px}
-.header{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;padding:16px 20px;text-align:center;position:sticky;top:0;z-index:100}
-.header h1{font-size:1.1rem;font-weight:700}.header .sub{font-size:.7rem;opacity:.8;margin-top:2px}
-.offline-badge{display:inline-block;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:10px;font-size:.65rem;margin-top:4px}
+.header{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;padding:14px 18px;text-align:center;position:sticky;top:0;z-index:100}
+.header h1{font-size:1.05rem;font-weight:700}.header .sub{font-size:.68rem;opacity:.8;margin-top:2px}
+.ai-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:10px;font-size:.63rem;margin-top:4px}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:#4caf50;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;display:flex;box-shadow:0 -2px 20px rgba(0,0,0,.1);z-index:100}
 .nav button{flex:1;border:none;background:none;padding:10px 4px;font-size:.6rem;color:var(--tl);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
 .nav button.active{color:var(--p);font-weight:600}
 .nav button svg{width:22px;height:22px}
 .screen{display:none;padding:16px}.screen.active{display:block}
-.card{background:var(--c);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.card h2{font-size:.95rem;color:var(--p);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.card p{font-size:.82rem;color:var(--tl);line-height:1.7}
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:12px;border:none;font-size:.9rem;font-weight:600;cursor:pointer;width:100%;transition:.2s}
+.card{background:var(--c);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.card h2{font-size:.92rem;color:var(--p);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.card p{font-size:.8rem;color:var(--tl);line-height:1.7}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:12px;border:none;font-size:.88rem;font-weight:600;cursor:pointer;width:100%;transition:.2s}
 .btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--pl)}.btn:disabled{opacity:.5;cursor:not-allowed}
-.upload-area{border:3px dashed var(--pl);border-radius:16px;padding:30px 20px;text-align:center;cursor:pointer;background:rgba(45,106,79,.02)}
-.upload-area svg{width:44px;height:44px;color:var(--pl);margin-bottom:8px}
-.upload-area .hint{font-size:.78rem;color:var(--tl)}
-.upload-preview{display:none;text-align:center}.upload-preview img{max-width:100%;border-radius:12px;max-height:300px;object-fit:contain}
+.upload-area{border:3px dashed var(--pl);border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;background:rgba(45,106,79,.02)}
+.upload-area svg{width:40px;height:40px;color:var(--pl);margin-bottom:6px}
+.upload-area .hint{font-size:.76rem;color:var(--tl)}
+.upload-preview{display:none;text-align:center}.upload-preview img{max-width:100%;border-radius:12px;max-height:280px;object-fit:contain}
 canvas{display:none}
-.tabs{display:flex;gap:8px;margin-bottom:16px}.tab{padding:8px 16px;border-radius:20px;border:2px solid var(--pl);color:var(--p);font-size:.78rem;font-weight:600;cursor:pointer;background:none}.tab.active{background:var(--p);color:#fff;border-color:var(--p)}
-.q-item{margin-bottom:16px;padding:16px;background:var(--c);border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.q-item h3{font-size:.88rem;color:var(--p);margin-bottom:10px}.q-item .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--p);color:#fff;font-size:.68rem;font-weight:700;margin-left:6px}
-.options{display:flex;flex-direction:column;gap:6px}
-.opt{padding:10px 12px;border:2px solid #e8e8e8;border-radius:10px;font-size:.8rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{padding:7px 14px;border-radius:20px;border:2px solid var(--pl);color:var(--p);font-size:.76rem;font-weight:600;cursor:pointer;background:none}.tab.active{background:var(--p);color:#fff;border-color:var(--p)}
+.q-item{margin-bottom:14px;padding:14px;background:var(--c);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.q-item h3{font-size:.85rem;color:var(--p);margin-bottom:8px}.q-item .num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--p);color:#fff;font-size:.65rem;font-weight:700;margin-left:6px}
+.options{display:flex;flex-direction:column;gap:5px}
+.opt{padding:9px 11px;border:2px solid #e8e8e8;border-radius:10px;font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s}
 .opt:hover{border-color:var(--pl)}.opt.selected{border-color:var(--p);background:rgba(45,106,79,.06);font-weight:600}
-.opt .letter{width:22px;height:22px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0}.opt.selected .letter{background:var(--p);color:#fff}
-.progress{height:6px;background:#e8e8e8;border-radius:3px;margin-bottom:16px;overflow:hidden}.progress-bar{height:100%;background:linear-gradient(90deg,var(--p),var(--a));border-radius:3px;transition:.4s}
-.meter{height:10px;background:#eee;border-radius:5px;margin:6px 0;overflow:hidden}.meter-fill{height:100%;border-radius:5px;transition:.6s}
-.meter-label{display:flex;justify-content:space-between;font-size:.72rem;color:var(--tl)}
-.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.65rem;font-weight:700}
+.opt .letter{width:20px;height:20px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0}.opt.selected .letter{background:var(--p);color:#fff}
+.progress{height:5px;background:#e8e8e8;border-radius:3px;margin-bottom:14px;overflow:hidden}.progress-bar{height:100%;background:linear-gradient(90deg,var(--p),var(--a));border-radius:3px;transition:.4s}
+.meter{height:10px;background:#eee;border-radius:5px;margin:5px 0;overflow:hidden}.meter-fill{height:100%;border-radius:5px;transition:.6s}
+.meter-label{display:flex;justify-content:space-between;font-size:.7rem;color:var(--tl)}
+.badge{display:inline-block;padding:2px 7px;border-radius:6px;font-size:.63rem;font-weight:700}
 .badge-n{background:#e2e3e5;color:#383d41}
-.product-card{display:flex;gap:12px;padding:14px;border:2px solid #f0f0f0;border-radius:14px;margin-bottom:10px;cursor:pointer;transition:.15s}
+.product-card{display:flex;gap:10px;padding:12px;border:2px solid #f0f0f0;border-radius:12px;margin-bottom:8px;cursor:pointer;transition:.15s}
 .product-card:hover{border-color:var(--pl)}
-.product-card .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
-.product-card .info h4{font-size:.85rem;margin-bottom:3px}.product-card .info p{font-size:.72rem;color:var(--tl);line-height:1.5}
-.warning-box{background:var(--w);border:1px solid var(--wb);border-radius:10px;padding:12px;margin:10px 0;font-size:.78rem;line-height:1.7}
-.danger-box{background:#f8d7da;border:1px solid #f5c6cb;border-radius:10px;padding:12px;margin:10px 0;font-size:.78rem;line-height:1.7}
-.spinner{width:24px;height:24px;border:3px solid #eee;border-top-color:var(--p);border-radius:50%;animation:spin .6s linear infinite;margin:20px auto}
+.product-card .icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.product-card .info h4{font-size:.82rem;margin-bottom:2px}.product-card .info p{font-size:.7rem;color:var(--tl);line-height:1.4}
+.warning-box{background:var(--w);border:1px solid var(--wb);border-radius:10px;padding:10px;margin:8px 0;font-size:.76rem;line-height:1.6}
+.danger-box{background:#f8d7da;border:1px solid #f5c6cb;border-radius:10px;padding:10px;margin:8px 0;font-size:.76rem;line-height:1.6}
+.spinner{width:22px;height:22px;border:3px solid #eee;border-top-color:var(--p);border-radius:50%;animation:spin .6s linear infinite;margin:16px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;padding:24px 20px 40px}
-.modal h2{font-size:1.05rem;color:var(--p);margin-bottom:12px}
-.color-patch{display:inline-block;width:20px;height:20px;border-radius:4px;border:1px solid #ccc;vertical-align:middle;margin:0 4px}
-.result-section{margin:12px 0;padding:12px;background:#f8f9fa;border-radius:10px}
-.result-section h3{font-size:.85rem;color:var(--p);margin-bottom:6px}
-.result-section p{font-size:.8rem;line-height:1.8}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;padding:22px 18px 40px}
+.modal h2{font-size:1rem;color:var(--p);margin-bottom:10px}
+.ai-tag{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--tl);margin-bottom:8px}
+.result-block{margin:10px 0;padding:10px;background:#f8f9fa;border-radius:8px;border-right:3px solid var(--p)}
+.result-block .rb-title{font-weight:600;font-size:.82rem}.result-block .rb-desc{font-size:.76rem;color:var(--tl);margin-top:3px;line-height:1.7}
 </style>
 </head>
 <body>
@@ -64,20 +65,20 @@ canvas{display:none}
   <div class="header">
     <h1>🌿 مشاور نیوشانک</h1>
     <div class="sub">تحلیل هوشمند طب سنتی</div>
-    <div class="offline-badge">✅ کاملاً آفلاین — بدون نیاز به اینترنت</div>
+    <div class="ai-badge"><div class="ai-dot"></div> هوش مصنوعی فعال</div>
   </div>
 
   <div class="screen active" id="screen-home">
     <div class="card">
       <h2>👋 خوش آمدید</h2>
-      <p>مشاور هوشمند طب سنتی نیوشانک. تمام تحلیل‌ها روی گوشی شما انجام می‌شود — بدون ارسال اطلاعات به هیچ سروری.</p>
+      <p>مشاور هوشمند طب سنتی نیوشانک با پشتیبانی هوش مصنوعی.</p>
       <div class="danger-box">⚠️ ابزار کمکی — تشخیص و درمان فقط توسط پزشک.</div>
     </div>
     <div class="card" onclick="switchTab('tongue')" style="cursor:pointer">
-      <h2>👅 تحلیل زبان</h2><p>عکس زبان → تحلیل رنگ، پوشش، نشانه‌ها</p>
+      <h2>👅 تحلیل زبان</h2><p>عکس زبان → تحلیل AI رنگ و پوشش</p>
     </div>
     <div class="card" onclick="switchTab('iris')" style="cursor:pointer">
-      <h2>👁️ تحلیل عنبیه</h2><p>عکس چشم → تحلیل الگوهای عنبیه</p>
+      <h2>👁️ تحلیل عنبیه</h2><p>عکس چشم → تحلیل AI الگوهای عنبیه</p>
     </div>
     <div class="card" onclick="switchTab('questionnaire')" style="cursor:pointer">
       <h2>📋 پرسش‌نامه مزاج</h2><p>۱۲ سؤال → تعیین ترکیب طبع</p>
@@ -85,7 +86,7 @@ canvas{display:none}
   </div>
 
   <div class="screen" id="screen-tongue">
-    <div class="card"><h2>👅 تحلیل هوشمند زبان</h2><p>عکس واضح در نور طبیعی بگیرید. الگوریتم محلی تحلیل می‌کند.</p></div>
+    <div class="card"><h2>👅 تحلیل هوشمند زبان</h2><p>عکس واضح در نور طبیعی بگیرید. AI تحلیل می‌کند.</p></div>
     <div class="upload-area" id="tongue-upload" onclick="triggerUpload('tongue')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 16V4m0 0L8 8m4-4l4 4"/></svg>
       <div class="hint">آپلود یا عکس بگیرید</div>
@@ -115,7 +116,7 @@ canvas{display:none}
   <div class="screen" id="screen-questionnaire">
     <div class="progress"><div class="progress-bar" id="q-progress" style="width:0%"></div></div>
     <div id="q-container"></div>
-    <button class="btn btn-p" id="q-submit" onclick="submitQuestionnaire()" style="display:none;margin-top:8px">🔍 محاسبه مزاج</button>
+    <button class="btn btn-p" id="q-submit" onclick="submitQuestionnaire()" style="display:none;margin-top:8px">🔍 محاسبه مزاج با AI</button>
     <div id="q-result"></div>
   </div>
 
@@ -143,8 +144,42 @@ canvas{display:none}
 </div>
 
 <script>
+// ===== API CONFIG =====
+const API_URL='https://9router-production-2452.up.railway.app/v1/chat/completions';
+const API_KEY='sk-084a5cb1ed1c4ce9-xv2h6u-0c61df38';
+const API_MODEL='Mohta';
+
+async function callAI(prompt, base64Image){
+  const content=[];
+  if(base64Image){
+    content.push({type:'image_url',image_url:{url:'data:image/jpeg;base64,'+base64Image}});
+  }
+  content.push({type:'text',text:prompt});
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),30000);
+    const r=await fetch(API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+      body:JSON.stringify({model:API_MODEL,messages:[{role:'user',content}],max_tokens:2048,stream:false}),
+      signal:controller.signal
+    });
+    clearTimeout(timer);
+    const raw=await r.text();
+    // SSE parse
+    let full='';
+    for(const line of raw.split('\n')){
+      if(line.startsWith('data: ')){
+        try{const j=JSON.parse(line.slice(6));const d=j.choices?.[0]?.delta?.content;if(d)full+=d;}catch(e){}
+      }
+    }
+    if(!full){try{full=JSON.parse(raw).choices?.[0]?.message?.content||'';}catch(e){}}
+    return full||null;
+  }catch(e){return null;}
+}
+
 // ===== STATE =====
-let irisEye='right', questionnaireAnswers={}, temperamentResult=null;
+let irisEye='right',questionnaireAnswers={},temperamentResult=null;
 
 // ===== NAV =====
 function switchTab(n){
@@ -157,191 +192,28 @@ function switchTab(n){
 function triggerUpload(t){document.getElementById(t+'-file').click();}
 function setIrisEye(e,el){irisEye=e;document.querySelectorAll('#screen-iris .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
 
-// ===== COLOR ANALYSIS ENGINE =====
+// ===== COLOR ANALYSIS =====
 function rgbToHsl(r,g,b){
-  r/=255;g/=255;b/=255;
-  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
-  let h,s,l=(max+min)/2;
-  if(!d){h=s=0;}else{
-    s=l>.5?d/(2-max-min):d/(max+min);
-    switch(max){
-      case r:h=((g-b)/d+(g<b?6:0))/6;break;
-      case g:h=((b-r)/d+2)/6;break;
-      case b:h=((r-g)/d+4)/6;break;
-    }
-  }
+  r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+  let h,s,l=(mx+mn)/2;
+  if(!d)h=s=0;else{s=l>.5?d/(2-mx-mn):d/(mx+mn);if(mx===h=((g-b)/d+(g<b?6:0))/6);else if(mx===g)h=((b-r)/d+2)/6;else h=((r-g)/d+4)/6;}
   return[h*360,s*100,l*100];
 }
 
-function analyzeColors(pixels){
-  let totalR=0,totalG=0,totalB=0,count=0;
-  let hues=[],sats=[],lights=[];
-  let rCount=0,gCount=0,bCount=0,wCount=0,yCount=0,pCount=0;
-  let darkCount=0,brightCount=0;
-
+function extractColors(pixels){
+  let rC=0,gC=0,bC=0,wC=0,yC=0,pC=0,dC=0,brC=0,total=0;
   for(let i=0;i<pixels.length;i+=4){
-    const r=pixels[i],g=pixels[i+1],b=pixels[i+2],a=pixels[i+3];
-    if(a<128)continue;
-    totalR+=r;totalG+=g;totalB+=b;count++;
-    const[h,s,l]=rgbToHsl(r,g,b);
-    hues.push(h);sats.push(s);lights.push(l);
-
-    if(s<15&&l>80)wCount++;
-    else if(h<30||h>340)rCount++;
-    else if(h<70)yCount++;
-    else if(h<170)gCount++;
-    else if(h<270)bCount++;
-    else pCount++;
-
-    if(l<30)darkCount++;
-    if(l>70)brightCount++;
+    if(pixels[i+3]<128)continue;
+    const r=pixels[i],g=pixels[i+1],b=pixels[i+2];
+    total++;const[h,s,l]=rgbToHsl(r,g,b);
+    if(s<15&&l>80)wC++;else if(h<30||h>340)rC++;else if(h<70)yC++;else if(h<170)gC++;else if(h<270)bC++;else pC++;
+    if(l<30)dC++;if(l>70)brC++;
   }
-
-  if(!count)return null;
-
-  const avgH=totalR/count,avgG=totalG/count,avgB=totalB/count;
-  const avgHue=hues.reduce((a,b)=>a+b,0)/hues.length;
-  const avgSat=sats.reduce((a,b)=>a+b,0)/sats.length;
-  const avgLight=lights.reduce((a,b)=>a+b,0)/lights.length;
-  const dominantCount=Math.max(rCount,gCount,bCount,wCount,yCount,pCount);
-
+  if(!total)return null;
   return{
-    avgR:Math.round(avgR),avgG:Math.round(avgG),avgB:Math.round(avgB),
-    avgHue:Math.round(avgHue),avgSat:Math.round(avgSat),avgLight:Math.round(avgLight),
-    redRatio:Math.round(rCount/count*100),
-    whiteRatio:Math.round(wCount/count*100),
-    yellowRatio:Math.round(yCount/count*100),
-    greenRatio:Math.round(gCount/count*100),
-    blueRatio:Math.round(bCount/count*100),
-    purpleRatio:Math.round(pCount/count*100),
-    darkRatio:Math.round(darkCount/count*100),
-    brightRatio:Math.round(brightCount/count*100),
-    totalPixels:count
-  };
-}
-
-// ===== TONGUE ANALYSIS =====
-function analyzeTongue(colors){
-  const findings=[];
-  const temps={sauda:0,dam:0,balgham:0,soda:0};
-
-  // Color
-  if(colors.avgR>180&&colors.avgG<100&&colors.avgB<100){
-    findings.push({icon:'🔴',title:'رنگ قرمز تیره',desc:'بدن زبان قرمز تیره — نشانه حرارت و التهاب. احتمال افزایش صفرا.',temp:'sauda',score:3});
-  }else if(colors.avgR>160&&colors.avgG>100&&colors.avgG<140){
-    findings.push({icon:'🩷',title:'رنگ صورتی روشن',desc:'رنگ صورتی طبیعی — تعادل نسبی خون و طبع.',temp:'dam',score:2});
-  }else if(colors.avgR>150&&colors.avgR<200&&colors.avgG>120){
-    findings.push({icon:'🟠',title:'رنگ نارنجی مایل',desc:'ترکیب گرمی — احتمال طبع دمی-صفراوی.',temp:'dam',score:2});
-  }else if(colors.avgR<130&&colors.avgG<130&&colors.avgB>130){
-    findings.push({icon:'🔵',title:'رنگ مایل به کبود',desc:'زبان کبود — احتمال سردی و سکون خون. سوداوی.',temp:'soda',score:3});
-  }else if(colors.avgR<140&&colors.avgLight>60){
-    findings.push({icon:'⚪',title:'رنگ رنگ‌پریده',desc:'بدن زبان پریده — کم‌خونی یا سردی طبع.',temp:'balgham',score:2});
-  }else{
-    findings.push({icon:'🩷',title:'رنگ معمولی',desc:'رنگ زبان در محدوده طبیعی.',temp:'dam',score:1});
-  }
-
-  // Coating (white = phlegm)
-  if(colors.whiteRatio>35){
-    findings.push({icon:'🤍',title:'پوشش سفید ضخیم',desc:`${colors.whiteRatio}% پوشش سفید — نشانه تجمع بلغم و رطوبت در بدن.`,temp:'balgham',score:3});
-  }else if(colors.whiteRatio>20){
-    findings.push({icon:'🤍',title:'پوشش سفید متوسط',desc:`${colors.whiteRatio}% پوشش — اندکی بلغم. نیاز به رژیم غذایی دارد.`,temp:'balgham',score:2});
-  }
-
-  // Yellow coating (damp heat)
-  if(colors.yellowRatio>25){
-    findings.push({icon:'💛',title:'پوشش زرد',desc:`${colors.yellowRatio}% زردی — گرمای ناشی از صفرا و سوءهاضمه.`,temp:'sauda',score:3});
-  }
-
-  // Purple (blood stasis / soda)
-  if(colors.purpleRatio>15){
-    findings.push({icon:'🟣',title:'لکه‌های بنفش/کبود',desc:`${colors.purpleRatio}% بنفش — سکون خون و سوداوی. نیاز به حرکت و گرما.`,temp:'soda',score:3});
-  }
-
-  // Moisture (light = dry vs bright = moist)
-  if(colors.brightRatio>50&&colors.whiteRatio<15){
-    findings.push({icon:'💧',title:'زبان مرطوب/تر',desc:'براقی زیاد — رطوبت بالا. بلغمی.',temp:'balgham',score:2});
-  }else if(colors.darkRatio>30&&colors.whiteRatio<10){
-    findings.push({icon:'🏜️',title:'زبان خشک',desc:'تیرگی و خشکی — سودی یا کم‌آبی.',temp:'soda',score:2});
-  }
-
-  // Size (bright + white = swollen)
-  if(colors.brightRatio>60&&colors.whiteRatio>25){
-    findings.push({icon:'👅',title:'زبان متورم',desc:'پهن و متورم — بلغم غالب. نیاز به کاهش رطوبت.',temp:'balgham',score:2});
-  }
-
-  // Hot side indicators
-  if(colors.redRatio>40){
-    findings.push({icon:'🔥',title:'قرمزی زیاد',desc:'قرمزی بالا — حرارت بالا. احتمال صفراوی.',temp:'sauda',score:2});
-  }
-
-  // Temperament calculation
-  const allScores=[temps.sauda,temps.dam,temps.balgham,temps.soda];
-  findings.forEach(f=>{temps[f.temp]+=f.score;});
-  const total=Object.values(temps).reduce((a,b)=>a+b,0)||1;
-  const pcts=[Math.round(temps.sauda/total*100),Math.round(temps.dam/total*100),Math.round(temps.balgham/total*100),Math.round(temps.soda/total*100)];
-  const names=['صفراوی','دمی','بلغمی','سوداوی'];
-  const dominant=names[pcts.indexOf(Math.max(...pcts))];
-
-  return{findings,temps,pcts,dominant,
-    colorSummary:{red:colors.redRatio,white:colors.whiteRatio,yellow:colors.yellowRatio,purple:colors.purpleRatio,bright:colors.brightRatio,dark:colors.darkRatio}
-  };
-}
-
-// ===== IRIS ANALYSIS =====
-function analyzeIris(colors){
-  const findings=[];
-  const temps={sauda:0,dam:0,balgham:0,soda:0};
-
-  // Eye color
-  if(colors.avgLight<25&&colors.avgSat>30){
-    findings.push({icon:'🟤',title:'عنبیه قهوه‌ای تیره',desc:'رنگ تیره — طبع گرم (دمی-صفراوی). کبد قوی.',temp:'dam',score:2});
-  }else if(colors.avgLight>40&&colors.avgSat<40){
-    findings.push({icon:'🔵',title:'عنبیه روشن',desc:'رنگ روشن — حساسیت بیشتر. بلغمی-سوداوی.',temp:'balgham',score:2});
-  }else if(colors.avgLight>30&&colors.avgLight<50){
-    findings.push({icon:'🟢',title:'عنبیه عسلی/سبز',desc:'ترکیب گرم و سرد — تعادل نسبی.',temp:'dam',score:2});
-  }else{
-    findings.push({icon:'🟤',title:'رنگ معمولی',desc:'رنگ عنبیه در محدوده طبیعی.',temp:'dam',score:1});
-  }
-
-  // Dark rings/spots (soda indicator)
-  if(colors.darkRatio>25){
-    findings.push({icon:'⚫',title:'نواحی تیره',desc:`${colors.darkRatio}% تیرگی — نقاط تیره در عنبیه می‌تواند نشانه سوداوی باشد.`,temp:'soda',score:3});
-  }
-
-  // Bright areas (inflammation)
-  if(colors.brightRatio>35){
-    findings.push({icon:'✨',title:'نواحی روشن',desc:'نواحی روشن — احتمال التهاب یا تجمع سموم. صفراوی.',temp:'sauda',score:2});
-  }
-
-  // Red/brown tones
-  if(colors.redRatio>20){
-    findings.push({icon:'🔴',title:'هاله قرمز/قهوه‌ای',desc:'رنگ قرمزی — حرارت اضافی. صفرا.',temp:'sauda',score:2});
-  }
-
-  // Yellow (liver)
-  if(colors.yellowRatio>20){
-    findings.push({icon:'💛',title:'هاله زرد',desc:'زردی اطراف عنبیه — نشانه مشکل کبدی.',temp:'sauda',score:2});
-  }
-
-  // Blue tones (cold)
-  if(colors.blueRatio>15){
-    findings.push({icon:'🔵',title:'هاله آبی',desc:'رنگ آبی — سردی و ضعف گردش خون. بلغمی-سوداوی.',temp:'balgham',score:2});
-  }
-
-  // White ring (cholesterol / aging)
-  if(colors.whiteRatio>15){
-    findings.push({icon:'⚪',title:'حلقه سفید',desc:'حلقه سفید اطراف عنبیه — ممکن است نشانه کلسترول بالا.',temp:'balgham',score:2});
-  }
-
-  // Temperament
-  findings.forEach(f=>{temps[f.temp]+=f.score;});
-  const total=Object.values(temps).reduce((a,b)=>a+b,0)||1;
-  const pcts=[Math.round(temps.sauda/total*100),Math.round(temps.dam/total*100),Math.round(temps.balgham/total*100),Math.round(temps.soda/total*100)];
-  const names=['صفراوی','دمی','بلغمی','سوداوی'];
-  const dominant=names[pcts.indexOf(Math.max(...pcts))];
-
-  return{findings,temps,pcts,dominant,
-    colorSummary:{red:colors.redRatio,white:colors.whiteRatio,yellow:colors.yellowRatio,blue:colors.blueRatio,bright:colors.brightRatio,dark:colors.darkRatio}
+    red:Math.round(rC/total*100),white:Math.round(wC/total*100),yellow:Math.round(yC/total*100),
+    blue:Math.round(bC/total*100),purple:Math.round(pC/total*100),
+    dark:Math.round(dC/total*100),bright:Math.round(brC/total*100),total
   };
 }
 
@@ -354,220 +226,239 @@ function analyzeImage(type){
     document.getElementById(type+'-img').src=e.target.result;
     document.getElementById(type+'-upload').style.display='none';
     document.getElementById(type+'-preview').style.display='block';
-    document.getElementById(type+'-result').innerHTML='<div class="card"><div class="spinner"></div><p style="text-align:center">⏳ در حال تحلیل...</p></div>';
+    document.getElementById(type+'-result').innerHTML='<div class="card"><div class="spinner"></div><p style="text-align:center">⏳ در حال تحلیل با هوش مصنوعی...</p></div>';
 
+    // Extract colors locally
     const img=new Image();
-    img.onload=function(){
+    img.onload=async function(){
       const canvas=document.getElementById(type+'-canvas');
       const ctx=canvas.getContext('2d');
-      // Resize for speed
-      const maxDim=200;
+      const maxDim=150;
       const ratio=Math.min(maxDim/img.width,maxDim/img.height);
       canvas.width=Math.round(img.width*ratio);
       canvas.height=Math.round(img.height*ratio);
       ctx.drawImage(img,0,0,canvas.width,canvas.height);
-
       const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
-      const colors=analyzeColors(imageData.data);
+      const localColors=extractColors(imageData.data);
 
-      if(!colors){
-        document.getElementById(type+'-result').innerHTML='<div class="card"><div class="danger-box">❌ خطا در تحلیل تصویر</div></div>';
-        return;
+      // Get base64 for API (smaller)
+      const canvas2=document.createElement('canvas');
+      const ctx2=canvas2.getContext('2d');
+      const apiDim=256;
+      const r2=Math.min(apiDim/img.width,apiDim/img.height);
+      canvas2.width=Math.round(img.width*r2);
+      canvas2.height=Math.round(img.height*r2);
+      ctx2.drawImage(img,0,0,canvas2.width,canvas2.height);
+      const base64=canvas2.toDataURL('image/jpeg',0.7).split(',')[1];
+
+      // Build prompt
+      const colorDesc=localColors?
+        `\nرنگ تشخیص محلی: قرمز=${localColors.red}% سفید=${localColors.white}% زرد=${localColors.yellow}% بنفش=${localColors.purple}% تیره=${localColors.dark}% روشن=${localColors.bright}%`:'';
+
+      const prompt=type==='tongue'?
+        `تو یک متخصص طب سنتی و زبان‌شناسی هستی. این عکس زبان یک بیمار است.${colorDesc}
+
+تحلیل کامل ارائه بده:
+۱. رنگ بدن زبان
+۲. پوشش زبان (رنگ، ضخامت، رطوبت)
+۳. شکل و اندازه
+۴. نشانه‌های خاص (ترک، رد دندان، لکه)
+۵. گرایش مزاجی (صفراوی/دمی/بلغمی/سوداوی)
+۶. نتیجه و توصیه‌ها
+
+به فارسی با ایموجی.`:
+        `تو یک متخصص عنبیه‌شناسی سنتی هستی. این عکس چشم بیمار است.${colorDesc}
+
+تحلیل کامل ارائه بده:
+۱. رنگ عنبیه
+۲. نواحی ساعتی (بالا=مغز، پایین=گوارش، چپ=کبد، راست=قلب)
+۳. لکه‌ها و حلقه‌ها
+۴. گرایش مزاجی
+۵. توصیه‌ها
+
+به فارسی با ایموجی.`;
+
+      // Call AI API
+      const aiResult=await callAI(prompt,base64);
+
+      if(aiResult){
+        renderResult(type,aiResult,localColors,true);
+      }else{
+        // Fallback to local analysis
+        const localResult=type==='tongue'?analyzeTongueLocal(localColors):analyzeIrisLocal(localColors);
+        renderResult(type,localResult,localColors,false);
       }
-
-      setTimeout(()=>{
-        let result;
-        if(type==='tongue') result=analyzeTongue(colors);
-        else result=analyzeIris(colors);
-
-        renderAnalysisResult(type,result,colors);
-        updateProducts();
-      },300);
+      updateProducts();
     };
     img.src=e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-function renderAnalysisResult(type,result,colors){
+function renderResult(type,analysis,colors,hasAI){
   const title=type==='tongue'?'زبان':'عنبیه '+(irisEye==='right'?'راست':'چپ');
-  let html=`<div class="card">
-    <h2>📊 تحلیل ${title}</h2>
-    <div style="font-size:.72rem;color:var(--tl);margin-bottom:12px">✅ تحلیل محلی — اطلاعات از گوشی خارج نشده</div>`;
-
-  // Color palette
-  html+=`<div style="margin-bottom:12px">
-    <div style="font-size:.78rem;font-weight:600;margin-bottom:6px">🎨 ترکیب رنگ تشخیص داده شده:</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:.72rem">`;
-  const colorLabels={red:'🔴 قرمز',white:'⚪ سفید',yellow:'🟡 زرد',purple:'🟣 بنفش',blue:'🔵 آبی',bright:'✨ روشن',dark:'⚫ تیره'};
-  for(const[k,v] of Object.entries(result.colorSummary)){
-    if(v>5) html+=`<span style="background:#f0f0f0;padding:2px 8px;border-radius:8px">${colorLabels[k]||k}: ${v}%</span>`;
+  let html=`<div class="card"><h2>📊 تحلیل ${title}</h2>`;
+  if(hasAI){
+    html+=`<div class="ai-tag"><div class="ai-dot"></div>تحلیل شده با هوش مصنوعی</div>`;
+    html+=`<div style="font-size:.82rem;line-height:2">${analysis.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
+  }else{
+    html+=`<div class="ai-tag">📍 تحلیل محلی (بدون اینترنت)</div>`;
+    html+=`<div style="font-size:.82rem;line-height:2">${analysis}</div>`;
   }
-  html+=`</div></div>`;
-
-  // Findings
-  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:12px 0 8px">🔎 یافته‌ها:</h3>`;
-  result.findings.forEach(f=>{
-    html+=`<div style="margin-bottom:10px;padding:10px;background:#f8f9fa;border-radius:8px;border-right:3px solid var(--p)">
-      <div style="font-weight:600;font-size:.82rem">${f.icon} ${f.title}</div>
-      <div style="font-size:.78rem;color:var(--tl);margin-top:4px;line-height:1.7">${f.desc}</div>
-    </div>`;
-  });
-
-  // Temperament meters
-  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:16px 0 8px">🧬 گرایش مزاجی:</h3>`;
-  html+=meterRow('صفراوی (گرم+خشک)',result.pcts[0],'#e76f51');
-  html+=meterRow('دمی (گرم+مرطوب)',result.pcts[1],'#f4a261');
-  html+=meterRow('بلغمی (سرد+مرطوب)',result.pcts[2],'#457b9d');
-  html+=meterRow('سوداوی (سرد+خشک)',result.pcts[3],'#264653');
-  html+=`<p style="margin-top:10px;font-weight:700;font-size:.9rem;color:var(--p)">طب غالب: ${result.dominant}</p>`;
-
-  // Lifestyle advice based on type
-  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:16px 0 8px">💡 توصیه‌ها:</h3>`;
-  html+=`<div style="font-size:.8rem;line-height:2">${getAdvice(result.dominant)}</div>`;
-
-  html+=`<div class="warning-box" style="margin-top:12px">⚠️ تحلیل مبتنی بر الگوریتم رنگ — تشخیص قطعی نیست. با پرسش‌نامه ترکیب کنید.</div>`;
-  html+=`</div>`;
-
+  html+=`<div class="warning-box" style="margin-top:10px">⚠️ تحلیل کمکی — تشخیص قطعی نیست.</div></div>`;
   document.getElementById(type+'-result').innerHTML=html;
 }
 
-function getAdvice(dominant){
-  const advice={
-    'صفراوی':'<div>🍽️ <strong>غذا:</strong> از غذاهای تند و چرب بپرهیزید. سبزیجات سرد مانند کاهو و خیار مفید است.</div><div>🏃 <strong>ورزش:</strong> ورزش سبک در ساعات خنک روز. شنا مفید است.</div><div>💧 <strong>آب:</strong> آب خنک با لیمو. از چای داغ بپرهیزید.</div><div>😴 <strong>خواب:</strong> ظهر نخوابید. شب زود بخوابید.</div>',
-    'دمی':'<div>🍽️ <strong>غذا:</strong> تعادل در خوردن. از غذاهای خیلی گرم و خیلی سرد پرهیزید.</div><div>🏃 <strong>ورزش:</strong> ورزش منظم و متوسط. پیاده‌روی عالی است.</div><div>💧 <strong>آب:</strong> آب ولرم با عسل.</div><div>😴 <strong>خواب:</strong> ۷-۸ ساعت خواب منظم.</div>',
-    'بلغمی':'<div>🍽️ <strong>غذا:</strong> غذاهای گرم و تند بخورید. زنجبیل، دارچین، فلفل مفید است.</div><div>🏃 <strong>ورزش:</strong> ورزش شدید و منظم ضروری است. دویدن عالی است.</div><div>💧 <strong>آب:</strong> آب گرم با دارچین. از آب سرد بپرهیزید.</div><div>😴 <strong>خواب:</strong> صبح زود بیدار شوید. بعدازظهر نخوابید.</div>',
-    'سوداوی':'<div>🍽️ <strong>غذا:</strong> غذاهای تازه و گرم بخورید. از غذاهای تخمیری و کهنه بپرهیزید.</div><div>🏃 <strong>ورزش:</strong> ورزش ملایم در هوای آزاد. یوگا مفید است.</div><div>💧 <strong>آب:</strong> آب گرم با عسل و لیمو.</div><div>😴 <strong>خواب:</strong> شب زود بخوابید. از بی‌خوابی پرهیزید.</div>'
-  };
-  return advice[dominant]||'';
+// ===== LOCAL FALLBACK ANALYSIS =====
+function analyzeTongueLocal(c){
+  if(!c)return'❌ خطا در تحلیل تصویر.';
+  let r=`🔍 <strong>تحلیل محلی زبان:</strong>\n`;
+  if(c.white>30)r+=`\n🤍 پوشش سفید زیاد (${c.white}%) — احتمال بلغم.\n`;
+  if(c.red>35)r+=`\n🔴 قرمزی زیاد (${c.red}%) — احتمال صفرا/حرارت.\n`;
+  if(c.yellow>20)r+=`\n💛 زردی (${c.yellow}%) — التهاب/سوءهاضمه.\n`;
+  if(c.purple>12)r+=`\n🟣 بنفش (${c.purple}%) — سکون خون/سوداوی.\n`;
+  if(c.dark>25)r+=`\n⚫ تیرگی (${c.dark}%) — سردی.\n`;
+  if(c.bright>50&&c.white>20)r+=`\n💧 تر و متورم — بلغم.\n`;
+  r+=`\n💡 پرسش‌نامه رو هم پر کنید برای نتیجه دقیق‌تر.`;
+  return r;
+}
+function analyzeIrisLocal(c){
+  if(!c)return'❌ خطا در تحلیل تصویر.';
+  let r=`🔍 <strong>تحلیل محلی عنبیه:</strong>\n`;
+  if(c.dark>25)r+=`\n⚫ نواحی تیره (${c.dark}%) — سوداوی.\n`;
+  if(c.bright>30)r+=`\n✨ نواحی روشن (${c.bright}%) — التهاب.\n`;
+  if(c.red>20)r+=`\n🔴 قرمزی (${c.red}%) — حرارت صفراوی.\n`;
+  if(c.yellow>18)r+=`\n💛 زردی (${c.yellow}%) — مشکل کبدی.\n`;
+  if(c.white>12)r+=`\n⚪ حلقه سفید (${c.white}%) — کلسترول.\n`;
+  if(c.blue>12)r+=`\n🔵 آبی (${c.blue}%) — سردی.\n`;
+  r+=`\n💡 پرسش‌نامه رو هم پر کنید.`;
+  return r;
 }
 
 // ===== QUESTIONNAIRE =====
 const questions=[
-  {q:'دمای بدن — کف دست/پا',opts:['گرم و خشک','سرد','گرم و مرطوب','معتدل، گاهی سرد']},
-  {q:'خواب',opts:['کم، سبک، بیداری مکرر','زیاد و سنگین، سخت بیدار می‌شم','متوسط، راحت','کم ولی عمیق']},
-  {q:'گوارش',opts:['یبوست رایج','نرم/شل، گاهی اسهال','منظم روزانه','مدت‌دار و سخت']},
-  {q:'وزن',opts:['لاغر، سخت چاق می‌شم','چاق می‌شم حتی با کم‌خوری','متوسط، با رژیم کنترل','متوسط تا لاغر']},
-  {q:'پوست',opts:['خشک، زبر، تیره','چرب، جوش‌دار، براق','مرطوب، نرم، رنگ پریده','معتدل']},
-  {q:'مو',opts:['خشک، کم‌پشت','چرب، ریزش','نرم و پرپشت','معتدل']},
+  {q:'دمای بدن — کف دست/پا',opts:['گرم و خشک','سرد','گرم و مرطوب','معتدل']},
+  {q:'خواب',opts:['کم، سبک','زیاد و سنگین','متوسط، راحت','کم ولی عمیق']},
+  {q:'گوارش',opts:['یبوست','نرم/اسهال','منظم','سخت']},
+  {q:'وزن',opts:['لاغر','چاق شدن آسان','متوسط','لاغر متوسط']},
+  {q:'پوست',opts:['خشک، تیره','چرب، جوش‌دار','مرطوب، رنگ پریده','معتدل']},
+  {q:'مو',opts:['خشک','چرب، ریزش','نرم، پرپشت','معتدل']},
   {q:'عرق',opts:['کم، بدبو','زیاد، بدبو','زیاد، بدون بو','متوسط']},
-  {q:'اشتها',opts:['زیاد، تحمل گرسنگی کم','زیاد، تحمل زیاد','متوسط','کم']},
-  {q:'دمای محیط مطلوب',opts:['سرد','گرم','خنک','معتدل']},
-  {q:'رفتار',opts:['عصبانی سریع','آرام، بی‌انگیزه','شاد، اجتماعی','جدی، گوشه‌گیر']},
-  {q:'صحبت',opts:['زیاد و سریع','آهسته و کم','زیاد و شاد','کم و جدی']},
-  {q:'حافظه',opts:['تیز و سریع','کند ولی عمیق','خوب ولی پراکنده','متوسط']},
+  {q:'اشتها',opts:['زیاد، گرسنگی سریع','زیاد، تحمل زیاد','متوسط','کم']},
+  {q:'دمای مطلوب',opts:['سرد','گرم','خنک','معتدل']},
+  {q:'رفتار',opts:['عصبانی سریع','آرام','شاد، اجتماعی','جدی']},
+  {q:'صحبت',opts:['زیاد و سریع','آهسته','زیاد و شاد','کم و جدی']},
+  {q:'حافظه',opts:['تیز','کند ولی عمیق','خوب ولی پراکنده','متوسط']},
 ];
 
 function initQuestionnaire(){
   const c=document.getElementById('q-container');
-  const letters=['الف','ب','ج','د'];
-  let html='';
+  const L=['الف','ب','ج','د'];let h='';
   questions.forEach((q,i)=>{
-    html+=`<div class="q-item"><h3><span class="num">${i+1}</span>${q.q}</h3><div class="options">`;
-    q.opts.forEach((o,j)=>{
-      html+=`<div class="opt" onclick="selectAnswer(${i},${j},this)"><span class="letter">${letters[j]}</span>${o}</div>`;
-    });
-    html+=`</div></div>`;
+    h+=`<div class="q-item"><h3><span class="num">${i+1}</span>${q.q}</h3><div class="options">`;
+    q.opts.forEach((o,j)=>{h+=`<div class="opt" onclick="selectAnswer(${i},${j},this)"><span class="letter">${L[j]}</span>${o}</div>`;});
+    h+=`</div></div>`;
   });
-  c.innerHTML=html;
+  c.innerHTML=h;
 }
 
 function selectAnswer(qi,oi,el){
   questionnaireAnswers[qi]=oi;
   el.closest('.options').querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
-  const answered=Object.keys(questionnaireAnswers).length;
-  document.getElementById('q-progress').style.width=(answered/questions.length*100)+'%';
-  document.getElementById('q-submit').style.display=answered===questions.length?'flex':'none';
+  const n=Object.keys(questionnaireAnswers).length;
+  document.getElementById('q-progress').style.width=(n/questions.length*100)+'%';
+  document.getElementById('q-submit').style.display=n===questions.length?'flex':'none';
 }
 
-function submitQuestionnaire(){
+async function submitQuestionnaire(){
   document.getElementById('q-submit').disabled=true;
-  document.getElementById('q-submit').innerHTML='<div class="spinner" style="width:20px;height:20px;margin:0"></div> محاسبه...';
+  document.getElementById('q-submit').innerHTML='<div class="spinner" style="width:18px;height:18px;margin:0"></div> تحلیل...';
 
   let scores=[0,0,0,0];
-  questions.forEach((q,i)=>{const ans=questionnaireAnswers[i];if(ans!==undefined)scores[ans]++;});
+  questions.forEach((q,i)=>{const a=questionnaireAnswers[i];if(a!==undefined)scores[a]++;});
   const total=scores.reduce((a,b)=>a+b,0);
   const pcts=scores.map(s=>Math.round(s/total*100));
   const dominant=['صفراوی','دمی','بلغمی','سوداوی'][pcts.indexOf(Math.max(...pcts))];
   temperamentResult={sauda:pcts[0],dam:pcts[1],balgham:pcts[2],soda:pcts[3],dominant};
 
+  // Try AI interpretation
+  const answers=questions.map((q,i)=>`${i+1}. ${q.q}: ${q.opts[questionnaireAnswers[i]]||'?'}`).join('\n');
+  const aiPrompt=`تو متخصص طب سنتی هستی. نتایج پرسش‌نامه:
+${answers}
+
+ترکیب: صفراوی ${pcts[0]}% | دمی ${pcts[1]}% | بلغمی ${pcts[2]}% | سوداوی ${pcts[3]}%
+طب غالب: ${dominant}
+
+تفسیر کلی، نقاط قوت/ضعف، توصیه غذایی و سبک زندگی، محصولات نیوشانک مناسب.
+فارسی با ایموجی.`;
+
+  const aiResult=await callAI(aiPrompt);
+
   let html=`<div class="card"><h2>🧬 نتیجه پرسش‌نامه</h2>`;
-  html+=meterRow('صفراوی (گرم+خشک)',pcts[0],'#e76f51');
-  html+=meterRow('دمی (گرم+مرطوب)',pcts[1],'#f4a261');
-  html+=meterRow('بلغمی (سرد+مرطوب)',pcts[2],'#457b9d');
-  html+=meterRow('سوداوی (سرد+خشک)',pcts[3],'#264653');
-  html+=`<p style="margin-top:10px;font-weight:700;font-size:.95rem;color:var(--p)">طب غالب: ${dominant}</p>`;
+  html+=mRow('صفراوی (گرم+خشک)',pcts[0],'#e76f51');
+  html+=mRow('دمی (گرم+مرطوب)',pcts[1],'#f4a261');
+  html+=mRow('بلغمی (سرد+مرطوب)',pcts[2],'#457b9d');
+  html+=mRow('سوداوی (سرد+خشک)',pcts[3],'#264653');
+  html+=`<p style="margin-top:8px;font-weight:700;font-size:.9rem;color:var(--p)">طب غالب: ${dominant}</p>`;
 
-  // Interpretation
-  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:16px 0 8px">📖 تفسیر:</h3>`;
-  html+=`<div style="font-size:.82rem;line-height:2">${getInterpretation(dominant,pcts)}</div>`;
-  html+=`<h3 style="font-size:.85rem;color:var(--p);margin:16px 0 8px">💡 توصیه‌ها:</h3>`;
-  html+=`<div style="font-size:.8rem;line-height:2">${getAdvice(dominant)}</div>`;
+  if(aiResult){
+    html+=`<div class="ai-tag" style="margin-top:10px"><div class="ai-dot"></div>تفسیر هوش مصنوعی</div>`;
+    html+=`<div style="font-size:.82rem;line-height:2">${aiResult.replace(/\n/g,'<br>')}</div>`;
+  }else{
+    html+=getLocalInterpretation(dominant,pcts);
+  }
   html+=`</div>`;
-
   document.getElementById('q-result').innerHTML=html;
   document.getElementById('q-submit').disabled=false;
-  document.getElementById('q-submit').innerHTML='🔍 محاسبه مزاج';
+  document.getElementById('q-submit').innerHTML='🔍 محاسبه مزاج با AI';
   updateProducts();
 }
 
-function getInterpretation(dominant,pcts){
-  const interp={
-    'صفراوی':'<p>🔥 شما دارای مزاج <strong>صفراوی</strong> هستید — گرم و خشک.</p><p>✅ نقاط قوت: هوشیاری بالا، انرژی زیاد، تصمیم‌گیری سریع.</p><p>⚠️ نقاط ضعف: استرس، عصبانیت، التهاب پوستی.</p><p>🍽️ غذاهای مناسب: سبزجات تازه، میوه‌های سرد، ماست و خیار.</p><p>🚫 غذاهای مضر: تندی، سرخ‌کردنی، قهوه.</p>',
-    'دمی':'<p>💧 شما دارای مزاج <strong>دمی</strong> هستید — گرم و مرطوب.</p><p>✅ نقاط قوت: شادابی، اجتماعی بودن، قدرت بدنی خوب.</p><p>⚠️ نقاط ضعف: التهاب، خونریزی، حساسیت.</p><p>🍽️ غذاهای مناسب: غذاهای متعادل، سبزجات پخته.</p><p>🚫 غذاهای مضر: غذاهای خیلی چرب و شور.</p>',
-    'بلغمی':'<p>❄️ شما دارای مزاج <strong>بلغمی</strong> هستید — سرد و مرطوب.</p><p>✅ نقاط قوت: صبر، آرامش، تحمل بالا.</p><p>⚠️ نقاط ضعف: کم‌حرکتی، اضافه وزن، افسردگی.</p><p>🍽️ غذاهای مناسب: زنجبیل، دارچین، غذاهای تند و گرم.</p><p>🚫 غذاهای مضر: شیرینی، نان سفید، آب سرد.</p>',
-    'سوداوی':'<p>🌑 شما دارای مزاج <strong>سوداوی</strong> هستید — سرد و خشک.</p><p>✅ نقاط قوت: تحلیل‌گر، خلاق، حافظه قوی.</p><p>⚠️ نقاط ضعف: افسردگی، بی‌خوابی، خشکی پوست.</p><p>🍽️ غذاهای مناسب: غذاهای تازه و گرم، عسل.</p><p>🚫 غذاهای مضر: غذاهای تخمیری، کافئین.</p>'
+function getLocalInterpretation(dominant){
+  const i={
+    'صفراوی':'🔥 <strong>صفراوی</strong> — گرم و خشک.<br>✅ هوشیار، پرانرژی، تصمیم‌گیر سریع<br>⚠️ استرس، التهاب<br>🍽️ سبزیجات سرد، ماست، خیار<br>🚫 تندی، سرخ‌کردنی، قهوه',
+    'دمی':'💧 <strong>دمی</strong> — گرم و مرطوب.<br>✅ شاد، اجتماعی، قوی<br>⚠️ التهاب، حساسیت<br>🍽️ غذای متعادل، سبزیجات پخته<br>🚫 چربی زیاد، شوری',
+    'بلغمی':'❄️ <strong>بلغمی</strong> — سرد و مرطوب.<br>✅ صبور، آرام<br>⚠️ کم‌حرکتی، اضافه وزن<br>🍽️ زنجبیل، دارچین، تندی<br>🚫 شیرینی، آب سرد',
+    'سوداوی':'🌑 <strong>سوداوی</strong> — سرد و خشک.<br>✅ تحلیل‌گر، خلاق<br>⚠️ افسردگی، بی‌خوابی<br>🍽️ غذای تازه و گرم<br>🚫 تخمیری، کافئین'
   };
-  return interp[dominant]||'';
+  return`<div style="font-size:.82rem;line-height:2;margin-top:10px">${i[dominant]}</div>`;
 }
 
 // ===== PRODUCTS =====
 const products=[
-  {name:'دمنوش آرامش',icon:'🌙',color:'#e8eaf6',type:'آرامش',tags:['دمی','بلغمی'],desc:'سنبل‌الطیب، بابونه، اسطوخودوس — مناسب شب',warn:'ناشتا ندهید — آرام‌بخش است'},
+  {name:'دمنوش آرامش',icon:'🌙',color:'#e8eaf6',type:'آرامش',tags:['دمی','بلغمی'],desc:'سنبل‌الطیب، بابونه، اسطوخودوس — مناسب شب',warn:'ناشتا ندهید'},
   {name:'دمنوش هضم',icon:'🍵',color:'#e8f5e9',type:'گوارش',tags:['بلغمی','دمی'],desc:'بادرشبو، نعناع، رازیانه — تقویت معده'},
   {name:'دمنوش انرژی',icon:'⚡',color:'#fff3e0',type:'انرژی',tags:['سوداوی','بلغمی'],desc:'چای سبز، دارچین، زنجبیل — شادابی'},
-  {name:'دمنوش سمزدایی',icon:'🌿',color:'#e0f2f1',type:'تصفیه',tags:['صفراوی','دمی'],desc:'خارمریبط، قره‌قاط، گزنه — پاکسازی کبد'},
-  {name:'معجون رویایی',icon:'💫',color:'#fce4ec',type:'آرامش',tags:['دمی','بلغمی'],desc:'عمیق‌تر از دمنوش آرامش',warn:'فقط شب، ناشتا ندهید'},
-  {name:'معجون مصونیت',icon:'🛡️',color:'#f3e5f5',type:'ایمنی',tags:['همه'],desc:'سماق، عسل، زنجبیل — تقویت ایمنی'},
-  {name:'روغن بدن نعناعی',icon:'💧',color:'#e0f7fa',type:'ماساژ',tags:['دمی','صفراوی'],desc:'نعناع، اکالیپتوس — خنک‌کننده'},
-  {name:'روغن بدن گرم',icon:'🔥',color:'#fbe9e7',type:'ماساژ',tags:['سوداوی','بلغمی'],desc:'دارچین، زنجبیل، سیاه‌دانه — گرم‌کننده'},
+  {name:'دمنوش سمزدایی',icon:'🌿',color:'#e0f2f1',type:'تصفیه',tags:['صفراوی','دمی'],desc:'خارمریبط، قره‌قاط، گزنه — پاکسازی'},
+  {name:'معجون رویایی',icon:'💫',color:'#fce4ec',type:'آرامش',tags:['دمی','بلغمی'],desc:'عمیق‌تر از دمنوش آرامش',warn:'فقط شب'},
+  {name:'معجون مصونیت',icon:'🛡️',color:'#f3e5f5',type:'ایمنی',tags:['همه'],desc:'سماق، عسل، زنجبیل — ایمنی'},
+  {name:'روغن نعناعی',icon:'💧',color:'#e0f7fa',type:'ماساژ',tags:['دمی','صفراوی'],desc:'نعناع، اکالیپتوس — خنک‌کننده'},
+  {name:'روغن گرم',icon:'🔥',color:'#fbe9e7',type:'ماساژ',tags:['سوداوی','بلغمی'],desc:'دارچین، زنجبیل، سیاه‌دانه — گرم‌کننده'},
   {name:'چای سبز نعناعی',icon:'🍃',color:'#e8f5e9',type:'متابولیسم',tags:['دمی','صفراوی'],desc:'متابولیسم + هضم'},
 ];
 
 function updateProducts(){
-  let tags=['همه'];
-  if(temperamentResult){
-    tags=[temperamentResult.dominant];
-  }
+  let tags=temperamentResult?[temperamentResult.dominant]:['همه'];
   const matched=products.filter(p=>p.tags.some(t=>tags.includes(t)||t==='همه'));
   const others=products.filter(p=>!p.tags.some(t=>tags.includes(t)||t==='همه'));
-  let html='';
-  if(matched.length){html+=`<div class="card"><h2>✅ پیشنهاد ویژه</h2>`;matched.forEach(p=>html+=pCard(p));html+=`</div>`;}
-  if(others.length){html+=`<div class="card"><h2>📦 سایر</h2>`;others.forEach(p=>html+=pCard(p));html+=`</div>`;}
-  document.getElementById('products-list').innerHTML=html||'<div class="card"><p>ابتدا پرسش‌نامه یا تحلیل عکس انجام دهید.</p></div>';
+  let h='';
+  if(matched.length){h+=`<div class="card"><h2>✅ پیشنهاد ویژه</h2>`;matched.forEach(p=>h+=pCard(p));h+=`</div>`;}
+  if(others.length){h+=`<div class="card"><h2>📦 سایر</h2>`;others.forEach(p=>h+=pCard(p));h+=`</div>`;}
+  document.getElementById('products-list').innerHTML=h||'<div class="card"><p>ابتدا پرسش‌نامه یا تحلیل عکس انجام دهید.</p></div>';
 }
-function pCard(p){
-  return`<div class="product-card" onclick="showProduct('${p.name}')">
-    <div class="icon" style="background:${p.color}">${p.icon}</div>
-    <div class="info"><h4>${p.name} <span class="badge badge-n">${p.type}</span></h4><p>${p.desc.substring(0,60)}...</p></div></div>`;
-}
-function showProduct(name){
-  const p=products.find(x=>x.name===name);if(!p)return;
-  let h=`<h2>${p.icon} ${p.name}</h2><p style="margin:12px 0;line-height:1.8">${p.desc}</p>`;
+function pCard(p){return`<div class="product-card" onclick="showProduct('${p.name}')"><div class="icon" style="background:${p.color}">${p.icon}</div><div class="info"><h4>${p.name} <span class="badge badge-n">${p.type}</span></h4><p>${p.desc.substring(0,55)}...</p></div></div>`;}
+function showProduct(n){
+  const p=products.find(x=>x.name===n);if(!p)return;
+  let h=`<h2>${p.icon} ${p.name}</h2><p style="margin:10px 0;line-height:1.8">${p.desc}</p>`;
   if(p.warn)h+=`<div class="danger-box">⚠️ ${p.warn}</div>`;
   h+=`<div class="warning-box">💡 با مشورت مشاور استفاده شود.</div>`;
   document.getElementById('modal-content').innerHTML=h;
   document.getElementById('modal-overlay').classList.add('show');
 }
+function mRow(l,v,c){return`<div class="meter-label"><span>${l}</span><span>${v}%</span></div><div class="meter"><div class="meter-fill" style="width:${v}%;background:${c}"></div></div>`;}
 
-function meterRow(label,value,color){
-  return`<div class="meter-label"><span>${label}</span><span>${value}%</span></div><div class="meter"><div class="meter-fill" style="width:${value}%;background:${color}"></div></div>`;
-}
-
-// ===== INIT =====
-initQuestionnaire();
-updateProducts();
+initQuestionnaire();updateProducts();
 </script>
 </body>
 </html>
