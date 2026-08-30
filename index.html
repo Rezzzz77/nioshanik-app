@@ -127,17 +127,21 @@ canvas{display:none}
 var API_URL='https://9router-production-2452.up.railway.app/v1/chat/completions';
 var API_KEY='sk-084a5cb1ed1c4ce9-xv2h6u-0c61df38';
 var API_MODEL='gem';
+var API_FALLBACK=['Openouter','Rezzz','Mohta'];
 
-function callAI(prompt) {
+function callAI(prompt, _tries) {
+  _tries = _tries || 0;
+  var models = [API_MODEL].concat(API_FALLBACK);
+  var model = models[_tries] || API_MODEL;
   return new Promise(function(resolve) {
     var body = JSON.stringify({
-      model: API_MODEL,
+      model: model,
       messages: [{role:'user', content:prompt}],
       max_tokens: 2048,
       stream: true
     });
     var ctrl = new AbortController();
-    var timer = setTimeout(function(){ ctrl.abort(); }, 40000);
+    var timer = setTimeout(function(){ ctrl.abort(); }, 30000);
     fetch(API_URL, {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
@@ -145,13 +149,13 @@ function callAI(prompt) {
       signal: ctrl.signal
     }).then(function(resp) {
       clearTimeout(timer);
-      if (!resp.ok) { resolve(null); return; }
+      if (!resp.ok) { resolve(_tries < models.length-1 ? callAI(prompt, _tries+1) : null); return; }
       var reader = resp.body.getReader();
       var decoder = new TextDecoder();
       var full = '';
       function read() {
         reader.read().then(function(result) {
-          if (result.done) { resolve(full || null); return; }
+          if (result.done) { resolve(full || (_tries < models.length-1 ? callAI(prompt, _tries+1) : null)); return; }
           var chunk = decoder.decode(result.value, {stream:true});
           var lines = chunk.split('\n');
           for (var i=0; i<lines.length; i++) {
@@ -166,10 +170,10 @@ function callAI(prompt) {
             }
           }
           read();
-        }).catch(function(){ resolve(full || null); });
+        }).catch(function(){ resolve(full || (_tries < models.length-1 ? callAI(prompt, _tries+1) : null)); });
       }
       read();
-    }).catch(function(){ clearTimeout(timer); resolve(null); });
+    }).catch(function(){ clearTimeout(timer); resolve(_tries < models.length-1 ? callAI(prompt, _tries+1) : null); });
   });
 }
 
