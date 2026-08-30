@@ -398,20 +398,7 @@ function analyze(type){
       ctx.drawImage(img,0,0,cv.width,cv.height);
       var px=analyzePixels(ctx.getImageData(0,0,cv.width,cv.height).data);
       var pixelText=formatPixelData(px);
-      
-      // ORGAN DETECTION GATE — reject non-organ photos (wall etc.)
-      var cpx=analyzePixels(ctx.getImageData(Math.round(cv.width*.25),Math.round(cv.height*.25),Math.round(cv.width*.5),Math.round(cv.height*.5)).data);
-      var centerRed=cpx.pct.realRed+cpx.pct.realPink;
-      var totRed=px.pct.realRed+px.pct.realPink;
-      var darkCenter=cpx.pct.dark+cpx.pct.black;
-      var looksOrgan;
-      if(type==='tongue')looksOrgan=(totRed>=18&&centerRed>=35);
-      else looksOrgan=(darkCenter>=2&&darkCenter<=60&&(px.pct.white+px.pct.bright)>=8&&px.pct.grey<60);
-      if(!looksOrgan){
-        $(type==='tongue'?'t-res':'i-res').innerHTML='<div class="card"><h2>🚫 عکس نامناسب</h2><div class="danger">'+(type==='tongue'?'❌ این عکس شبیه زبان نیست.':'❌ این عکس شبیه چشم (عنبیه) نیست.')+'</div><p style="font-size:.8rem;line-height:2">'+(type==='tongue'?'✅ زبان را بیرون آورید و عکس نزدیک بگیرید<br>✅ نور طبیعی، بدون فیلتر':'✅ عکس نزدیک از چشم باز بگیرید<br>✅ نور کافی، نگاه مستقیم به دوربین')+'</p></div>';
-        return;
-      }
-      
+
       $(type==='tongue'?'t-img':'i-img').src=e.target.result;
       $(type==='tongue'?'t-up':'i-up').style.display='none';
       $(type==='tongue'?'t-pv':'i-pv').style.display='block';
