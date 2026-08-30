@@ -16,6 +16,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .hdr h1{font-size:1.05rem}.hdr .sub{font-size:.68rem;opacity:.8;margin-top:2px}
 .ai-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:10px;font-size:.63rem;margin-top:4px}
 .ai-dot{width:7px;height:7px;border-radius:50%;background:#4caf50;animation:pulse 2s infinite}
+.ai-dot.off{background:#f44336;animation:none}
+.ai-dot.wait{background:#ff9800;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;display:flex;box-shadow:0 -2px 20px rgba(0,0,0,.1);z-index:100}
 .nav button{flex:1;border:none;background:none;padding:10px 4px;font-size:.6rem;color:var(--tl);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -68,7 +70,7 @@ canvas{display:none}
   <div class="hdr">
     <h1>🌿 مشاور نیوشانک</h1>
     <div class="sub">تحلیل هوشمند طب سنتی</div>
-    <div class="ai-badge"><div class="ai-dot"></div> هوش مصنوعی فعال</div>
+    <div class="ai-badge" id="aiBadge"><div class="ai-dot" id="aiDot"></div><span id="aiTxt">⏳ اتصال هوش مصنوعی...</span></div>
   </div>
 
   <div class="scr active" id="screen-home">
@@ -187,7 +189,7 @@ function callAI(prompt) {
     var pending=4,won=false,bestReasoning='';
     function finish(v){
       if(won)return;
-      if(v&&!/^[\sA-Za-z0-9.,;:()\-+*/=<>\[\]{}"']*$/.test(v)&&v.length>10){won=true;final(v)}
+      if(v&&!/^[\sA-Za-z0-9.,;:()\-+*/=<>\[\]{}"']*$/.test(v)&&v.length>10){won=true;setAI('ok');final(v)}
       else if(v&&v.length>bestReasoning.length)bestReasoning=v;
       if(!won&&--pending===0){won=true;final(bestReasoning||null)}
     }
@@ -196,6 +198,17 @@ function callAI(prompt) {
     streamModel(WORKER_URL,'B',prompt,finish);
     streamModel(WORKER_URL,'gem',prompt,finish);
   });
+}
+
+function setAI(st){
+  var d=$('aiDot'),t=$('aiTxt');if(!d||!t)return;
+  d.className='ai-dot'+(st==='ok'?'':st==='off'?' off':' wait');
+  t.textContent=st==='ok'?'✅ هوش مصنوعی فعال':st==='off'?'🔴 آفلاین — تحلیل محلی':'⏳ اتصال هوش مصنوعی...';
+}
+function probeAI(try2){
+  streamModel(WORKER_URL,try2?'Openouter':'Rezzz','فقط بگو فعال',function(r){
+    if(r)setAI('ok');else if(!try2)probeAI(true);else setAI('off');
+  },15000);
 }
 
 /* === STATE === */
@@ -326,7 +339,7 @@ function analyze(type){
       var pixelText=formatPixelData(px);
       
       // Show local results immediately
-      var localHTML='<div class="card"><h2>📊 تحلیل پیکسلی '+(type==='tongue'?'زbian':'عنبیه')+'</h2>';
+      var localHTML='<div class="card"><h2>📊 تحلیل پیکسلی '+(type==='tongue'?'زبان':'عنبیه')+'</h2>';
       localHTML+='<div class="clr-grid">';
       var top=Object.entries(px.pct).sort(function(a,b){return b[1]-a[1]}).slice(0,6);
       top.forEach(function(c){
@@ -362,14 +375,14 @@ function analyze(type){
         if(result){
           var fmt=result.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
           $(type==='tongue'?'t-res':'i-res').innerHTML=
-            '<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'zbian':'عنبیه')+'</h2>'+
+            '<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'زبان':'عنبیه')+'</h2>'+
             '<div class="clr-grid">'+top.map(function(c){return c[1]>0?'<div class="clr-item" style="background:#f0f0f0">'+c[0]+': '+c[1]+'%</div>':''}).join('')+'</div>'+
             '<div class="ai-tag"><div class="ai-dot"></div> تفسیر AI</div>'+
             '<div style="font-size:.82rem;line-height:2">'+fmt+'</div>'+
             '<div class="warn">⚠️ کمکی — تشخیص قطعی نیست.</div></div>';
         } else {
           $(type==='tongue'?'t-res':'i-res').innerHTML=
-            '<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'zbian':'عنبیه')+'</h2>'+
+            '<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'زبان':'عنبیه')+'</h2>'+
             '<div class="clr-grid">'+top.map(function(c){return c[1]>0?'<div class="clr-item" style="background:#f0f0f0">'+c[0]+': '+c[1]+'%</div>':''}).join('')+'</div>'+
             '<div class="danger">⚠️ AI وصل نشد. فقط تحلیل پیکسلی نمایش داده شد.</div>'+
             localFallback(type,px)+'</div>';
@@ -549,6 +562,7 @@ function showP(n){
 /* === INIT === */
 initQ();
 updProducts();
+probeAI();
 </script>
 </body>
 </html>
