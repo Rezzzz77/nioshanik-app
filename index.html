@@ -78,6 +78,7 @@ canvas{display:none}
     <div class="card" onclick="go('tongue')" style="cursor:pointer"><h2>👅 تحلیل زبان</h2><p>عکس زبان → تحلیل پیکسلی + تفسیر AI</p></div>
     <div class="card" onclick="go('iris')" style="cursor:pointer"><h2>👁️ تحلیل عنبیه</h2><p>عکس چشم → تحلیل پیکسلی + تفسیر AI</p></div>
     <div class="card" onclick="go('quest')" style="cursor:pointer"><h2>📋 پرسش‌نامه مزاج</h2><p>۱۲ سؤال → تعیین طبع + تفسیر AI</p></div>
+    <div class="card" onclick="exportLabeled()" style="cursor:pointer"><h2>🧠 داده آموزشی</h2><p id="lbl-count">📦 ۰ نمونه برچسب‌دار ذخیره شده</p><p style="font-size:.72rem;color:#999">عکس‌های تحلیل‌شده با برچسب AI، فقط روی گوشی شما — خروجی JSON برای بهبود دقت</p></div>
   </div>
 
   <div class="scr" id="screen-tongue">
@@ -450,6 +451,7 @@ function analyze(type){
       
       callAI(prompt).then(function(result){
         if(result&&!aiBad(result)){
+          saveLabeled(type,cv,px,result);
           var fmt=result.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
           $(type==='tongue'?'t-res':'i-res').innerHTML=
             '<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'زبان':'عنبیه')+'</h2>'+
@@ -641,10 +643,39 @@ function showP(n){
   });
 }
 
+/* === LABELED DATASET (فاز ۱) === */
+function saveLabeled(type,cv,px,aiText){
+  try{
+    var tc=document.createElement('canvas');
+    tc.width=tc.height=128;
+    var r=Math.min(128/cv.width,128/cv.height);
+    tc.getContext('2d').drawImage(cv,(128-cv.width*r)/2,(128-cv.height*r)/2,cv.width*r,cv.height*r);
+    var arr=JSON.parse(localStorage.getItem('niosh_labeled')||'[]');
+    arr.push({t:type,d:new Date().toISOString(),img:tc.toDataURL('image/jpeg',.7),px:px.pct,ai:aiText.slice(0,500)});
+    while(arr.length>50)arr.shift();
+    localStorage.setItem('niosh_labeled',JSON.stringify(arr));
+  }catch(e){/* quota/full — dataset optional, never block analysis */}
+}
+function updateLblCount(){
+  var n=0;try{n=JSON.parse(localStorage.getItem('niosh_labeled')||'[]').length}catch(e){}
+  var el=$('lbl-count');if(el)el.textContent='📦 '+n.toLocaleString('fa-IR')+' نمونه برچسب‌دار ذخیره شده';
+}
+function exportLabeled(){
+  var arr=[];try{arr=JSON.parse(localStorage.getItem('niosh_labeled')||'[]')}catch(e){}
+  if(!arr.length){alert('هنوز نمونه‌ای ذخیره نشده — اول عکس تحلیل کنید.');return}
+  var b=new Blob([JSON.stringify({exported:new Date().toISOString(),samples:arr},null,1)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download='niosh-labeled-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},3000);
+}
+
 /* === INIT === */
 initQ();
 updProducts();
 probeAI();
+updateLblCount();
 </script>
 </body>
 </html>
