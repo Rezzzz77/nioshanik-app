@@ -139,9 +139,7 @@ canvas{display:none}
 function $(id){return document.getElementById(id)}
 
 /* === API === */
-var DIRECT_URL='https://9router-production-2452.up.railway.app/v1/chat/completions';
 var WORKER_URL='https://nioshanik-ai.arshadirad7475.workers.dev/v1/chat/completions';
-var API_KEY='sk-084a5cb1ed1c4ce9-xv2h6u-0c61df38';
 
 function streamModel(base, model, prompt, finish, capMs, sys) {
   var ctrl=new AbortController();
@@ -149,7 +147,7 @@ function streamModel(base, model, prompt, finish, capMs, sys) {
   var body=JSON.stringify({model:model,messages:[{role:'system',content:sys||'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
   fetch(base,{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+    headers:{'Content-Type':'application/json'},
     body:body,signal:ctrl.signal
   }).then(function(r){
     if(!r.ok){clearTimeout(timer);finish(null);return}
