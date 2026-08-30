@@ -281,14 +281,15 @@ function rgbToHsl(r,g,b){
 
 /* === اصلاح نور + طبقه‌بندی Lab (رویکرد ISO/TR 20498-5) === */
 function whiteBalance(d){
-  // gray-world: میانگین‌ها در فضای خطی sRGB، سپس مقیاس کانال‌ها به میانگین مشترک
-  var n=0,sr=0,sg=0,sb=0,i;
-  for(i=0;i<d.length;i+=4){n++;sr+=Math.pow(d[i]/255,2.2);sg+=Math.pow(d[i+1]/255,2.2);sb+=Math.pow(d[i+2]/255,2.2)}
-  if(!n)return;
-  sr/=n;sg/=n;sb/=n;var m=(sr+sg+sb)/3;
-  var mx=Math.max(sr,sg,sb),mn=Math.min(sr,sg,sb);
-  if(mx-mn<0.05||mx<0.02)return; // خنثی/تاریک → دست نمی‌زنیم
-  var kr=m/sr,kg=m/sg,kb=m/sb;
+  // white-patch: روشن‌ترین ۳% پیکسل (پوشش/اسپکیولا) = تخمین نور صحنه؛ ایمن برای صحنه قرمز
+  var n=d.length/4,i,lim=Math.max(50,Math.round(n*0.03));
+  if(n<lim)return;
+  var idx=[];for(i=0;i<d.length;i+=4)idx.push(i);
+  idx.sort(function(a,b){return (0.2126*d[b]+0.7152*d[b+1]+0.0722*d[b+2])-(0.2126*d[a]+0.7152*d[a+1]+0.0722*d[a+2])});
+  var sr=0,sg=0,sb=0;for(i=0;i<lim;i++){sr+=Math.pow(d[idx[i]]/255,2.2);sg+=Math.pow(d[idx[i]+1]/255,2.2);sb+=Math.pow(d[idx[i]+2]/255,2.2)}
+  sr/=lim;sg/=lim;sb/=lim;var m=(sr+sg+sb)/3;
+  function k(c){return Math.max(0.55,Math.min(1.8,m/c))}
+  var kr=k(sr),kg=k(sg),kb=k(sb);
   for(i=0;i<d.length;i+=4){
     d[i]=Math.max(0,Math.min(255,Math.round(255*Math.pow(Math.pow(d[i]/255,2.2)*kr,1/2.2))));
     d[i+1]=Math.max(0,Math.min(255,Math.round(255*Math.pow(Math.pow(d[i+1]/255,2.2)*kg,1/2.2))));
@@ -304,7 +305,7 @@ function rgb2lab(r,g,b,o){
   o[0]=116*fy-16;o[1]=500*(fx-fy);o[2]=200*(fy-fz);return o;
 }
 var _NC=[
- ['white',245,245,245],['black',26,26,26],['grey',128,128,128],
+ ['white',245,245,245],['black',26,26,26],['grey',95,95,95],
  ['red',192,57,43],['orange',230,126,34],['yellow',212,177,6],
  ['green',74,124,89],['blue',52,101,164],['purple',108,79,140],
  ['pink',232,160,168],['brown',110,78,50]
@@ -385,7 +386,7 @@ function analyzePixels(data){
   };
 }
 
-function formatPixelData(px){
+function formatPixelData(px,type){
   var h='📊 داده پیکسلی:\n';
   h+='میانگین RGB: '+px.avgR+','+px.avgG+','+px.avgB+'\n';
   h+='رنگ‌ها: ';
@@ -395,6 +396,19 @@ function formatPixelData(px){
   h+='تاریک/روشن: '+px.pct.dark+'%/'+px.pct.bright+'%\n';
   h+='اشباع: '+px.pct.saturated+'%/'+'کم‌اشباع='+px.pct.desaturated+'%\n';
   h+='گرم/سرد: '+px.pct.warm+'%/'+px.pct.cool+'%\n';
+  if(type==='tongue'){
+    // ماسک زبان: فقط پیکسل‌های رنگ مخاط — درصدها از داخل ماسک (پس‌زمینه/لباس حذف می‌شود)
+    var keys=['red','pink','white','yellow','purple'],sum=0;
+    for(var j=0;j<keys.length;j++)sum+=px.pct[keys[j]]||0;
+    if(sum>=3){
+      h+='🎯 ناحیه زبان ('+sum+'% از کادر): ';
+      var part=[];
+      for(j=0;j<keys.length;j++){var v=px.pct[keys[j]]||0;if(v>0)part.push(keys[j]+'='+Math.round(v/sum*100)+'%')}
+      part.sort(function(a,b){return parseInt(b.split('=')[1])-parseInt(a.split('=')[1])});
+      h+=part.join(' ');
+    }else h+='⚠️ ناحیه زبان در کادر کوچک است — عکس نزدیک‌تر بگیرید';
+    h+='\n';
+  }
   h+='هیستوگرام رنگ (۱۲ بخش ۳۰ درجه): '+px.hueHist.join(',');
   return h;
 }
@@ -427,7 +441,7 @@ function analyze(type){
       whiteBalance(idata.data);           // اصلاح نور محیط — ریشه خطای تشخیص رنگ
       ctx.putImageData(idata,0,0);
       var px=analyzePixels(idata.data);
-      var pixelText=formatPixelData(px);
+      var pixelText=formatPixelData(px,type);
 
       $(type==='tongue'?'t-img':'i-img').src=e.target.result;
       $(type==='tongue'?'t-up':'i-up').style.display='none';
