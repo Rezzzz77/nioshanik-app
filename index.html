@@ -136,18 +136,22 @@ canvas{display:none}
 function $(id){return document.getElementById(id)}
 
 /* === API === */
-var API_URL='https://9router-production-2452.up.railway.app/v1/chat/completions';
+var DIRECT_URL='https://9router-production-2452.up.railway.app/v1/chat/completions';
+var WORKER_URL='https://nioshanik-ai.arshadirad7475.workers.dev/v1/chat/completions';
 var API_KEY='sk-084a5cb1ed1c4ce9-xv2h6u-0c61df38';
 
 function callAI(prompt, tries) {
   tries = tries || 0;
-  var models = ['B','gem','Openouter','Rezzz','Mohta','ag/gemini-3.6-flash-medium','openrouter/minimax/minimax-m3:free'];
-  var model = models[tries] || models[0];
+  var attempts=[
+    {u:WORKER_URL,m:'B'},{u:WORKER_URL,m:'gem'},{u:WORKER_URL,m:'Rezzz'},
+    {u:DIRECT_URL,m:'B'},{u:DIRECT_URL,m:'Rezzz'},{u:DIRECT_URL,m:'gem'},{u:DIRECT_URL,m:'Openouter'}
+  ];
+  var a=attempts[tries]||attempts[0];
   return new Promise(function(ok) {
-    var body = JSON.stringify({model:model,messages:[{role:'system',content:'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
+    var body = JSON.stringify({model:a.m,messages:[{role:'system',content:'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
     var ctrl = new AbortController();
-    var timer = setTimeout(function(){ctrl.abort()}, 60000);
-    fetch(API_URL,{
+    var timer = setTimeout(function(){ctrl.abort()}, 45000);
+    fetch(a.u,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
       body:body,signal:ctrl.signal
