@@ -482,11 +482,19 @@ function setAI(st){
   d.className='ai-dot'+(st==='ok'?'':st==='off'?' off':' wait');
   t.textContent=st==='ok'?'✅ هوش مصنوعی فعال':st==='off'?'🔴 آفلاین — تحلیل محلی':'⏳ اتصال هوش مصنوعی...';
 }
-function probeAI(try2){
+function probeAI(){
   loadTraining();
-  streamModel(WORKER_URL,try2?'Openouter':'Rezzz','فقط بگو فعال',function(r){
-    if(r)setAI('ok');else if(!try2)probeAI(true);else setAI('off');
-  },15000);
+  // چند مدل هم‌زمان تست می‌شوند؛ اولین بایت متن = «فعال».
+  // سقف قبلی ۱۵ ثانیه بود، ولی اولین توکن مدل‌ها ۶ تا ۳۰ ثانیه طول می‌کشد،
+  // بنابراین پروب همیشه قبل از پاسخ قطع می‌شد و بی‌دلیل «آفلاین» نشان می‌داد.
+  var probes=['B','Rezzz','gem'],left=probes.length,done=false;
+  function ok(){if(done)return;done=true;setAI('ok')}
+  probes.forEach(function(m){
+    streamModel(WORKER_URL,m,'فقط بگو فعال',function(r){
+      if(r){ok();return}
+      if(--left===0&&!done)setAI('off');
+    },60000,null,function(){ok()});
+  });
 }
 
 /* === STATE === */
