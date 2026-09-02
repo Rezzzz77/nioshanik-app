@@ -82,28 +82,28 @@ canvas{display:none}
   </div>
 
   <div class="scr" id="screen-tongue">
-    <div class="card"><h2>👅 تحلیل زبان</h2><p>عکس واضح در نور طبیعی بگیرید.</p></div>
+    <div class="card"><h2>👅 تحلیل زبان</h2><p>عکس واضح در نور طبیعی. می‌توانید همان لحظه عکس بگیرید یا عکس ذخیره‌شده در گالری گوشی را انتخاب کنید. 📷🖼</p></div>
     <div class="upload" id="t-up" onclick="$('t-file').click()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 16V4m0 0L8 8m4-4l4 4"/></svg>
-      <div class="hint">آپلود یا عکس بگیرید</div>
+      <div class="hint">از گالری انتخاب کنید یا عکس بگیرید</div>
     </div>
-    <input type="file" id="t-file" accept="image/*" capture="environment" style="display:none" onchange="analyze('tongue')">
+    <input type="file" id="t-file" accept="image/*" style="display:none" onchange="analyze('tongue')">
     <div class="preview" id="t-pv"><img id="t-img"></div>
     <canvas id="t-cv"></canvas>
     <div id="t-res"></div>
   </div>
 
   <div class="scr" id="screen-iris">
-    <div class="card"><h2>👁️ تحلیل عنبیه</h2><p>عکس واضح از چشم.</p></div>
+    <div class="card"><h2>👁️ تحلیل عنبیه</h2><p>عکس واضح از چشم. دوربین یا گالری گوشی — هر کدام راحت‌تر است. 📷🖼</p></div>
     <div class="tabs">
       <button class="tab active" onclick="setEye('right',this)">چشم راست</button>
       <button class="tab" onclick="setEye('left',this)">چشم چپ</button>
     </div>
     <div class="upload" id="i-up" onclick="$('i-file').click()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
-      <div class="hint">آپلود یا عکس بگیرید</div>
+      <div class="hint">از گالری انتخاب کنید یا عکس بگیرید</div>
     </div>
-    <input type="file" id="i-file" accept="image/*" capture="environment" style="display:none" onchange="analyze('iris')">
+    <input type="file" id="i-file" accept="image/*" style="display:none" onchange="analyze('iris')">
     <div class="preview" id="i-pv"><img id="i-img"></div>
     <canvas id="i-cv"></canvas>
     <div id="i-res"></div>
@@ -117,7 +117,7 @@ canvas{display:none}
   </div>
 
   <div class="scr" id="screen-products">
-    <div class="card"><h2>🍵 محصولات نیوشانک</h2><p>پیشنهاد بر اساس مزاج.</p></div>
+    <div class="card"><h2>🍵 محصولات نیوشانک</h2><p>فقط محصولات موجود در <a href="https://newshanik.ir" target="_blank" style="color:var(--p)">newshanik.ir</a> — پیشنهاد بر اساس مزاج</p><p style="font-size:.75rem;color:#999"><span id="nio-upd"></span></p><button class="btn" style="padding:8px 14px;font-size:.8rem;margin-top:6px" onclick="refreshNioPrices(false)">🔄 بروزرسانی قیمت‌ها از سایت</button></div>
     <div id="p-list"></div>
   </div>
 
@@ -141,7 +141,132 @@ function $(id){return document.getElementById(id)}
 /* === API === */
 var WORKER_URL='https://nioshanik-ai.arshadirad7475.workers.dev/v1/chat/completions';
 
-function streamModel(base, model, prompt, finish, capMs, sys) {
+/* === کاتالوگ واقعی نیوشا — فقط محصولات موجود در newshanik.ir (قیمت مصرف‌کننده، تومان) === */
+var NIO_SRC='https://newshanik.ir';
+var NIO_UPD='۱۴۰۵/۰۶/۰۹';
+var NIO_PRODUCTS=[
+  {id:'2206',n:'دمنوش خالص به مثلثی نیوشا (12عددی)',p:250000,c:'دمنوش خالص',t:['دمی'],d:'آرامش و تقویت قلب',u:'https://newshanik.ir/product/2206/'},
+  {id:'2332',n:'دمنوش خالص زیره سبز مثلثی نیوشا (12 عددی)',p:240000,c:'دمنوش خالص',t:['بلغمی'],d:'هضم و نفخ',u:'https://newshanik.ir/product/2332/'},
+  {id:'2340',n:'دمنوش خالص آویشن مثلثی نیوشا (10 عددی)',p:240000,c:'دمنوش خالص',t:['بلغمی','سوداوی'],d:'سرماخوردگی و سرفه',u:'https://newshanik.ir/product/2340/'},
+  {id:'2344',n:'دمنوش خالص فلفل کوهی مثلثی نیوشا ( 12 عددی )',p:240000,c:'دمنوش خالص',t:['بلغمی','سوداوی'],d:'متابولیسم و گرمی',u:'https://newshanik.ir/product/2344/'},
+  {id:'2405',n:'دمنوش خالص رزماری مثلثی نیوشا (12 عددی)',p:240000,c:'دمنوش خالص',t:['سوداوی','بلغمی'],d:'حافظه و تمرکز',u:'https://newshanik.ir/product/2405/'},
+  {id:'2338',n:'دمنوش خالص کاسنی مثلثی نیوشا (12 عددی)',p:250000,c:'دمنوش خالص',t:['صفراوی','دمی'],d:'تصفیه کبد',u:'https://newshanik.ir/product/2338/'},
+  {id:'2398',n:'چوب دارچین دوی پک نیوشا (60گرمی)',p:250000,c:'دمنوش خالص',t:['بلغمی','سوداوی'],d:'گرم‌کننده و تعادل قند',u:'https://newshanik.ir/product/2398/'},
+  {id:'2341',n:'دمنوش خالص نعناع فلفلی مثلثی نیوشا (10 عددی)',p:260000,c:'دمنوش خالص',t:['دمی','صفراوی'],d:'هضم و خنکی',u:'https://newshanik.ir/product/2341/'},
+  {id:'2454',n:'دمنوش خالص مریم گلی مثلثی نیوشا (12 عددی)',p:260000,c:'دمنوش خالص',t:['بلغمی','دمی'],d:'گلو و سینه',u:'https://newshanik.ir/product/2454/'},
+  {id:'2477',n:'دمنوش خالص بومادران مثلثی نیوشا (10 عددی)',p:260000,c:'دمنوش خالص',t:['دمی','صفراوی'],d:'هضم و تب',u:'https://newshanik.ir/product/2477/'},
+  {id:'937',n:'دمنوش خالص چای ترش کیسه ای نیوشا (20عددی)',p:290000,c:'دمنوش خالص',t:['صفراوی','دمی'],d:'فشار خون و سرمایش',u:'https://newshanik.ir/product/937/'},
+  {id:'2335',n:'دمنوش خالص بابونه مثلثی نیوشا (12عددی)',p:290000,c:'دمنوش خالص',t:['دمی','بلغمی','سوداوی'],d:'آرامش و خواب',u:'https://newshanik.ir/product/2335/'},
+  {id:'2308',n:'دمنوش خالص به لیمو کیسه ای نیوشا (20عددی)',p:310000,c:'دمنوش خالص',t:['دمی','صفراوی'],d:'آرامش و نشاط',u:'https://newshanik.ir/product/2308/'},
+  {id:'2317',n:'دمنوش خالص شکوفه آلوورا مثلثی نیوشا (12 عددی)',p:330000,c:'دمنوش خالص',t:['دمی'],d:'پوست و شفافیت',u:'https://newshanik.ir/product/2317/'},
+  {id:'2348',n:'دمنوش خالص اسطوخودوس مثلثی نیوشا ( 12 عددی )',p:330000,c:'دمنوش خالص',t:['سوداوی','دمی'],d:'آرامش اعصاب',u:'https://newshanik.ir/product/2348/'},
+  {id:'2331',n:'دمنوش خالص گل گاوزبان مثلثی نیوشا (12 عددی)',p:360000,c:'دمنوش خالص',t:['دمی','صفراوی'],d:'اعصاب و آرامش',u:'https://newshanik.ir/product/2331/'},
+  {id:'2446',n:'بهدانه دوی پک نیوشا (100 گرمی)',p:480000,c:'دمنوش خالص',t:['همه'],d:'تقویت عمومی',u:'https://newshanik.ir/product/2446/'},
+  {id:'2189',n:'دمنوش معجون رویایی مثلثی نیوشا (12عددی)',p:240000,c:'دمنوش ترکیبی',t:['دمی','بلغمی','سوداوی'],d:'خواب عمیق',u:'https://newshanik.ir/product/2189/'},
+  {id:'2299',n:'دمنوش شنبلیله و گزنه و گشنیز کیسه ای نیوشا (20عددی)',p:240000,c:'دمنوش ترکیبی',t:['بلغمی','سوداوی'],d:'تعادل قند و تصفیه',u:'https://newshanik.ir/product/2299/'},
+  {id:'2293',n:'دمنوش خارمریم و شاه تره و کاسنی کیسه ای نیوشا (20عددی)',p:260000,c:'دمنوش ترکیبی',t:['صفراوی'],d:'کبد و صفرا',u:'https://newshanik.ir/product/2293/'},
+  {id:'2438',n:'دمنوش خارمریم،رازیانه،زنجبیل، نعناع‌فلفلی،شیرین‌بیان',p:260000,c:'دمنوش ترکیبی',t:['بلغمی','دمی'],d:'هضم',u:'https://newshanik.ir/product/2438/'},
+  {id:'2195',n:'دمنوش حس خوب زندگی مثلثی نیوشا (12 عددی)',p:290000,c:'دمنوش ترکیبی',t:['همه'],d:'نشاط',u:'https://newshanik.ir/product/2195/'},
+  {id:'2209',n:'دمنوش راز سلامتی مثلثی نیوشا (12عددی)',p:290000,c:'دمنوش ترکیبی',t:['همه'],d:'تقویت عمومی',u:'https://newshanik.ir/product/2209/'},
+  {id:'1002939',n:'دمنوش بابونه،بادرنجبویه، اسطوخودوس،پنیرک مثلثی نیوشا (12عددی)',p:310000,c:'دمنوش ترکیبی',t:['دمی','سوداوی','بلغمی'],d:'آرامش',u:'https://newshanik.ir/product/1002939/'},
+  {id:'1002931',n:'دمنوش شکوفه سنجد مثلثی نیوشا (12عددی)',p:330000,c:'دمنوش ترکیبی',t:['سوداوی','بلغمی'],d:'تقویت',u:'https://newshanik.ir/product/1002931/'},
+  {id:'2249',n:'دمنوش گل گاوزبان و به لیمو و زیرفون و سنبل الطیب کیسه ای نیوشا (20عددی)',p:380000,c:'دمنوش ترکیبی',t:['دمی','سوداوی'],d:'خواب و اعصاب',u:'https://newshanik.ir/product/2249/'},
+  {id:'2210',n:'دمنوش ریزمیوه های قرمز نیوشا (100گرمی)',p:650000,c:'دمنوش ترکیبی',t:['همه'],d:'آنتی‌اکسیدان',u:'https://newshanik.ir/product/2210/'},
+  {id:'1002629',n:'خاکشیر دوی پک نیوشا (200 گرمی )',p:240000,c:'دانه',t:['دمی','صفراوی'],d:'تصفیه و رطوبت',u:'https://newshanik.ir/product/1002629/'},
+  {id:'1002631',n:'خاکشیر ساشه ای 20 عددی نیوشا',p:288000,c:'دانه',t:['دمی','صفراوی'],d:'تصفیه و رطوبت',u:'https://newshanik.ir/product/1002631/'},
+  {id:'2444',n:'تخم کتان دوی پک نیوشا (200 گرمی)',p:300000,c:'دانه',t:['بلغمی','دمی'],d:'یبوست، پوست و مو',u:'https://newshanik.ir/product/2444/'},
+  {id:'2448',n:'تخم خرفه دوی پک نیوشا (200 گرمی)',p:360000,c:'دانه',t:['صفراوی','دمی'],d:'خنک‌کننده',u:'https://newshanik.ir/product/2448/'},
+  {id:'2447',n:'دانه چیا دوی پک نیوشا (200 گرمی)',p:408000,c:'دانه',t:['همه'],d:'انرژی و سیری',u:'https://newshanik.ir/product/2447/'},
+  {id:'1002630',n:'دانه چیا ساشه ای 20 عددی نیوشا',p:475000,c:'دانه',t:['همه'],d:'انرژی و سیری',u:'https://newshanik.ir/product/1002630/'},
+  {id:'2443',n:'دانه کینوا سفید نیوشا (200 گرمی)',p:480000,c:'دانه',t:['همه'],d:'تغذیه کامل',u:'https://newshanik.ir/product/2443/'},
+  {id:'2442',n:'دانه کینوا رنگارنگ نیوشا (200 گرمی)',p:600000,c:'دانه',t:['همه'],d:'تغذیه کامل',u:'https://newshanik.ir/product/2442/'},
+  {id:'1003240',n:'مینی روغن گردو - 30 میلی لیتر',p:202000,c:'روغن خالص',t:['سوداوی','بلغمی'],d:'مغز و اعصاب',u:'https://newshanik.ir/product/1003240/'},
+  {id:'1003094',n:'مینی روغن تخمه کدو 30 میلی لیتر',p:257000,c:'روغن خالص',t:['سوداوی','دمی'],d:'مو',u:'https://newshanik.ir/product/1003094/'},
+  {id:'1003096',n:'مینی روغن بادام 30 میلی لیتر',p:293000,c:'روغن خالص',t:['دمی','بلغمی'],d:'پوست',u:'https://newshanik.ir/product/1003096/'},
+  {id:'1003093',n:'مینی روغن فندق 30 میلی لیتر',p:330000,c:'روغن خالص',t:['دمی'],d:'پوست و مو',u:'https://newshanik.ir/product/1003093/'},
+  {id:'1003075',n:'روغن گردو - 120 میلی لیتر',p:671000,c:'روغن خالص',t:['سوداوی','بلغمی'],d:'مغز و اعصاب',u:'https://newshanik.ir/product/1003075/'},
+  {id:'1002703',n:'روغن تخم کتان - 120 میلی لیتر',p:730000,c:'روغن خالص',t:['بلغمی','دمی'],d:'پوست و مو',u:'https://newshanik.ir/product/1002703/'},
+  {id:'1002528',n:'روغن تخمه کدو - 120 میلی لیتر',p:860000,c:'روغن خالص',t:['سوداوی','دمی'],d:'مو',u:'https://newshanik.ir/product/1002528/'},
+  {id:'1002529',n:'روغن بادام شیرین - 120 میلی لیتر',p:980000,c:'روغن خالص',t:['دمی','بلغمی'],d:'ماساژ و پوست',u:'https://newshanik.ir/product/1002529/'},
+  {id:'1002628',n:'روغن فندق - 120 میلی لیتر',p:1100000,c:'روغن خالص',t:['دمی'],d:'پوست و مو',u:'https://newshanik.ir/product/1002628/'}
+];
+var NIO_CATALOG='';
+var NIO_RULE='';
+// قانون اولویت کبد — شناسه‌محصولات کاتالوگ
+var NIO_LIVER=['2293','2438','2299','2332','2405','2338','2308'];  // گرم معتدل و دوستدار کبد
+var NIO_HOTDRY=['2344','2340','2398','2454'];                        // خیلی گرم و خشک — ممنوع با درگیری کبد
+function nioNames(ids){return NIO_PRODUCTS.filter(function(x){return ids.indexOf(x.id)>=0}).map(function(x){return x.n}).join(' ، ')}
+function fmtT(n){try{return n.toLocaleString('fa-IR')}catch(e){return (''+n).replace(/\B(?=(\d{3})+(?!\d))/g,',')}}
+function rebuildCatalog(){
+  NIO_KEYS=null;
+  NIO_CATALOG=NIO_PRODUCTS.map(function(x){return x.n+' — '+fmtT(x.p)+' تومان'}).join(' ، ');
+  NIO_RULE='\n\n🧾 قانون الزامی محصولات: هر محصولی که پیشنهاد می‌دهی فقط از کاتالوگ نیوشا (موجود در newshanik.ir) باشد: '+NIO_CATALOG+'. پیشنهاد هر محصول/برند/داروی خارج از این لیست اکیداً ممنوع است — اگر موردی در کاتالوگ نبود صریح بنویس «در کاتالوگ نیوشا موجود نیست». قیمت هر محصول را دقیقاً همان عدد کاتالوگ بنویس (قیمت مصرف‌کننده، بروز '+NIO_UPD+' از سایت نیوشانیک).'+
+    '\n\n🫀 قانون اولویت کبد (مهم‌ترین قانون — بر همه قوانین مزاجی مقدم است): در طب سنتی تحت هر شرایطی اولویت اول کبد است. حتی اگر فرد بلغم شدید داشت، اگر نشانه‌ای از صفرا، داغی یا کبد چرب هم دید، هرگز دمنوش خیلی گرم و خشک پیشنهاد نکن چون به کبد ضرر می‌زند. برای این افراد فقط دمنوش طبع گرمِ معتدل و دوستدار کبد بده.'+
+    '\n✅ دمنوش‌های گرم معتدل و کبدپسند (برای بلغم + درگیری کبد): '+nioNames(NIO_LIVER)+'.'+
+    '\n⛔ خیلی گرم و خشک — با هر نشانه کبد چرب/داغی/صفرا ممنوع: '+nioNames(NIO_HOTDRY)+'.'+
+    '\n🔍 نشانه‌های کبد چرب که باید چک کنی: خستگی صبحگاهی، سنگینی زیر دنده راست، خواب‌آلودگی بعد غذا، تلخی دهان صبح، چاقی شکمی، رگه یا لکه زرد روی زبان/عنبیه. اگر یکی از این‌ها بود، قانون کبد را اعمال کن و در پاسخ بنویس چرا دمنوش گرم و خشک ندادی.';
+}
+rebuildCatalog();
+function nioFetch(url,cb){
+  var ps=['https://api.allorigins.win/raw?url='+encodeURIComponent(url),'https://corsproxy.io/?url='+encodeURIComponent(url)];
+  (function go(i){if(i>=ps.length)return cb(null);
+    fetch(ps[i]).then(function(r){return r.ok?r.text():Promise.reject()}).then(function(t){cb(t)}).catch(function(){go(i+1)});
+  })(0);
+}
+function refreshNioPrices(silent){
+  var cats={'28':'دمنوش خالص','3':'دمنوش ترکیبی','30':'دانه','32':'روغن خالص'};
+  var done=0,ok=0;
+  Object.keys(cats).forEach(function(id){
+    nioFetch('https://newshanik.ir/productlist/'+id,function(html){
+      done++;
+      if(html){
+        try{
+          var seen={},list=[],re=/قیمت مصرف کننده/g,m;
+          while((m=re.exec(html))){
+            var chunk=html.slice(Math.max(0,m.index-3000),m.index);
+            var pm=null,lm,lr=/\/product\/(\d+)\/([^"?#]+)/g;
+            while((lm=lr.exec(chunk)))pm=lm;
+            var pz=/([\d,]{6,})/.exec(html.substr(m.index+m[0].length,300));
+            if(!pm||!pz||seen[pm[1]])continue;
+            seen[pm[1]]=1;
+            var alts=/alt="([^"]+)"/g,am,last=pm[2].replace(/-/g,' ');
+            while((am=alts.exec(chunk)))last=am[1];
+            list.push({id:pm[1],n:last,p:Math.round(parseInt(pz[1].replace(/,/g,''))/10),c:cats[id],u:'https://newshanik.ir/product/'+pm[1]+'/'});
+          }
+          if(list.length){
+            ok++;
+            list.forEach(function(np){
+              var ex=null;NIO_PRODUCTS.forEach(function(x){if(x.id===np.id)ex=x});
+              if(ex){ex.p=np.p;ex.n=np.n}else NIO_PRODUCTS.push(np);
+            });
+          }
+        }catch(e){}
+      }
+      if(done===4){
+        if(ok){
+          NIO_UPD=new Date().toLocaleDateString('fa-IR');
+          try{localStorage.setItem('nio_prices',JSON.stringify({t:Date.now(),d:NIO_UPD,it:NIO_PRODUCTS.map(function(x){return{id:x.id,p:x.p,n:x.n}})}))}catch(e){}
+          rebuildCatalog();
+          if(typeof updProducts==='function')updProducts();
+          if(!silent)alert('✅ قیمت‌ها از سایت نیوشانیک بروزرسانی شد — '+NIO_UPD);
+        } else if(!silent)alert('⚠️ وصل نشد — قیمت‌های قبلی حفظ شد');
+      }
+    });
+  });
+}
+function loadNioPrices(){
+  try{
+    var c=JSON.parse(localStorage.getItem('nio_prices')||'0');
+    if(c&&c.it&&Date.now()-c.t<864e5){
+      c.it.forEach(function(x){var e=null;NIO_PRODUCTS.forEach(function(y){if(y.id===x.id)e=y});if(e){e.p=x.p;e.n=x.n}});
+      NIO_UPD=c.d||NIO_UPD;rebuildCatalog();
+      return;
+    }
+  }catch(e){}
+  refreshNioPrices(true);
+}
+
+function streamModel(base, model, prompt, finish, capMs, sys, onDelta) {
   var ctrl=new AbortController();
   var timer=setTimeout(function(){ctrl.abort()},capMs||90000);
   var body=JSON.stringify({model:model,messages:[{role:'system',content:sys||'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
@@ -150,14 +275,14 @@ function streamModel(base, model, prompt, finish, capMs, sys) {
     headers:{'Content-Type':'application/json'},
     body:body,signal:ctrl.signal
   }).then(function(r){
-    if(!r.ok){clearTimeout(timer);finish(null);return}
+    if(!r.ok){clearTimeout(timer);finish(null,model);return}
     var reader=r.body.getReader(),dec=new TextDecoder(),full='',reasoning='',buf='';
     (function read(){
       reader.read().then(function(res){
         if(res.done){
           clearTimeout(timer);
           var best=full.trim()||reasoning.trim();
-          finish(best||null);
+          finish(best||null,model);
           return;
         }
         buf+=dec.decode(res.value,{stream:true});
@@ -169,7 +294,7 @@ function streamModel(base, model, prompt, finish, capMs, sys) {
           if(j==='[DONE]')return;
           try{
             var d=JSON.parse(j),del=d.choices&&d.choices[0]&&d.choices[0].delta||{};
-            if(del.content)full+=del.content;
+            if(del.content){full+=del.content;if(onDelta)onDelta(model,full,del.content)}
             if(del.reasoning_content)reasoning+=del.reasoning_content;
           }catch(e){}
         });
@@ -177,67 +302,178 @@ function streamModel(base, model, prompt, finish, capMs, sys) {
       }).catch(function(){
         clearTimeout(timer);
         var best=full.trim()||reasoning.trim();
-        finish(best||null);
+        finish(best||null,model);
       });
     })();
-  }).catch(function(){clearTimeout(timer);finish(null)});
+  }).catch(function(){clearTimeout(timer);finish(null,model)});
+  return ctrl;
+}
+
+/* === تصحیح خودکار قیمت و حذف محصول خارج کاتالوگ === */
+function nioNorm(s){
+  var fa='۰۱۲۳۴۵۶۷۸۹';
+  return (''+s).replace(/[۰-۹]/g,function(d){return fa.indexOf(d)})
+    .replace(/[٬,]/g,'').replace(/[\u200c\u200f]/g,' ')
+    .replace(/\*\*/g,'').replace(/[()]/g,' ').replace(/\s+/g,' ').trim();
+}
+// کلمات عمومی کاتالوگ که هویت محصول را مشخص نمی‌کنند
+var NIO_GENERIC=['نیوشا','نیوشانیک','دمنوش','خالص','ترکیبی','مثلثی','کیسه','عددی','دوی','گرمی','گرم','میلی','لیتر','ساشه','مینی','روغن','دانه','بسته','عدد','فشرده','سرد','پک'];
+var NIO_KEYS=null;
+function nioKeys(){
+  if(NIO_KEYS)return NIO_KEYS;
+  NIO_KEYS=NIO_PRODUCTS.map(function(p){
+    var t=nioNorm(p.n).split(/[\s،,\-–]+/).filter(function(x){
+      return x.length>2&&!/^\d+$/.test(x)&&NIO_GENERIC.indexOf(x)<0;
+    });
+    return {p:p,k:t};
+  });
+  return NIO_KEYS;
+}
+// تطبیق دوطرفه: هم پوشش کلمات خط، هم پوشش کلمات کلیدی محصول
+function nioMatch(txt,saidPrice){
+  var line=nioNorm(txt);
+  var w=line.split(' ').filter(function(x){return x.length>2&&!/^\d+$/.test(x)});
+  if(!w.length)return null;
+  var cands=[],bs=0;
+  nioKeys().forEach(function(e){
+    var full=nioNorm(e.p.n),hit=0;
+    w.forEach(function(x){if(full.indexOf(x)>=0)hit++});
+    var scLine=hit/w.length;                                    // پوشش کلمات خط
+    var kh=0;
+    e.k.forEach(function(x){if(line.indexOf(x)>=0)kh++});
+    var scKey=e.k.length?kh/e.k.length:0;                       // پوشش کلمات کلیدی محصول
+    var sc=Math.max(scLine,scKey);
+    if(sc>bs+1e-9){bs=sc;cands=[e.p]}
+    else if(sc>bs-1e-9)cands.push(e.p);
+  });
+  if(bs<0.5||!cands.length)return null;
+  if(cands.length>1&&saidPrice){                                // گره‌گشایی نسخه‌ها با قیمت
+    for(var i=0;i<cands.length;i++)if(cands[i].p===saidPrice)return cands[i];
+  }
+  return cands[0];
+}
+// قیمت‌های اشتباه AI را با عدد واقعی کاتالوگ جایگزین می‌کند
+function fixPrices(text){
+  if(!text)return text;
+  var fixed=0,removed=0;
+  var out=text.split('\n').map(function(line){
+    var pm=/([۰-۹٬,\d]{5,})\s*(?:تومان|ت\b)/.exec(line);
+    if(!pm)return line;
+    var said=parseInt(nioNorm(pm[1]),10);
+    if(!said||said<10000)return line;
+    var name=line.slice(0,pm.index).replace(/\|/g,' ').replace(/^[\s\-–•*]*\d*[.)\s]*/,'');
+    var p=nioMatch(name,said);
+    if(!p){removed++;return line+' ⚠️ (در کاتالوگ نیوشا موجود نیست)'}
+    if(p.p!==said){fixed++;return line.slice(0,pm.index)+fmtT(p.p)+' تومان'+line.slice(pm.index+pm[0].length)}
+    return line;
+  }).join('\n');
+  if(fixed||removed)out+='\n\n<span style="font-size:.7rem;color:#888">🔧 '+(fixed?fixed+' قیمت با کاتالوگ نیوشانیک تصحیح شد. ':'')+(removed?removed+' قلم خارج کاتالوگ علامت خورد.':'')+'</span>';
+  return out;
 }
 
 /* === TRAINING DATA (RAG-lite) === */
 var TRAIN_KB=[];
-function normSample(s){
-  if(typeof s==='string')return s;
-  if(s&&Array.isArray(s.samples))return s.samples.map(normSample);
-  if(s&&(s.q||s.question)&&(s.a||s.answer))return 'س: '+(s.q||s.question)+'\nج: '+(s.a||s.answer);
+function normSample(s,topic){
+  if(typeof s==='string')return {t:s,k:topic||''};
+  if(s&&Array.isArray(s.samples))return s.samples.map(function(x){return normSample(x,s.topic||topic)});
+  if(s&&(s.q||s.question)&&(s.a||s.answer))return {t:'س: '+(s.q||s.question)+'\nج: '+(s.a||s.answer),k:topic||''};
   return null;
 }
 function deepFlat(a){return a.reduce(function(r,x){return r.concat(Array.isArray(x)?deepFlat(x):[x])},[])}
 function loadTraining(){
-  try{var c=JSON.parse(localStorage.getItem('train_kb3')||'0');if(c&&c.kb&&Date.now()-c.t<864e5){TRAIN_KB=c.kb;return}}catch(e){}
+  try{var c=JSON.parse(localStorage.getItem('train_kb4')||'0');if(c&&c.kb&&Date.now()-c.t<864e5){TRAIN_KB=c.kb;return}}catch(e){}
   fetch('https://api.github.com/repos/Rezzzz77/nioshanik-app/contents/data',{headers:{Accept:'application/vnd.github+json'}})
     .then(function(r){return r.ok?r.json():Promise.reject()})
     .then(function(list){
-      var files=list.filter(function(f){return f.name.slice(-5)==='.json'&&f.size<300000}).sort(function(a,b){return a.name<b.name?1:-1}).slice(0,40);
-      return Promise.all(files.map(function(f){return fetch(f.url).then(function(r){return r.json()}).then(function(j){
-        var arr=JSON.parse(atob(j.content.replace(/\n/g,'')));
-        return (Array.isArray(arr)?arr:[arr]).map(normSample).filter(Boolean);
+      var files=list.filter(function(f){return f.name.slice(-5)==='.json'&&f.size<400000}).slice(0,60);
+      return Promise.all(files.map(function(f){return fetch(f.download_url).then(function(r){return r.json()}).then(function(j){
+        var topic=(j&&j.topic)||f.name.replace(/\.json$/,'');
+        var arr=Array.isArray(j)?j:[j];
+        return deepFlat(arr.map(function(x){return normSample(x,topic)})).filter(Boolean);
       }).catch(function(){return []})}));
     })
     .then(function(arrs){
-      TRAIN_KB=deepFlat(arrs).filter(function(x){return x&&typeof x==='string'});
-      if(TRAIN_KB.length)try{localStorage.setItem('train_kb3',JSON.stringify({t:Date.now(),kb:TRAIN_KB}))}catch(e){}
+      TRAIN_KB=deepFlat(arrs).filter(function(x){return x&&x.t&&typeof x.t==='string'});
+      if(TRAIN_KB.length)try{localStorage.setItem('train_kb4',JSON.stringify({t:Date.now(),kb:TRAIN_KB}))}catch(e){}
     })
     .catch(function(){});
 }
-function trainContext(prompt){
+// رتبه‌بندی BM25-lite: وزن پایین برای کلمات پرتکرار + بونوس موضوعی
+var TRAIN_DF=null;
+function trainTokens(s){
+  return (''+s).toLowerCase().replace(/[\u200c\u200f]/g,' ')
+    .replace(/[^\u0600-\u06FF\w\s]/g,' ').split(/\s+/)
+    .filter(function(w){return w.length>2&&['است','برای','این','ان','که','با','را','از','می','در','و','چیست','چه','کدام'].indexOf(w)<0});
+}
+function trainContext(prompt,hintTopics){
   if(!TRAIN_KB.length)return '';
-  var words=prompt.toLowerCase().replace(/[^\u0600-\u06FF\w\s]/g,' ').split(/\s+/).filter(function(w){return w.length>3});
+  if(!TRAIN_DF){
+    TRAIN_DF={};
+    TRAIN_KB.forEach(function(s){
+      var uniq={};trainTokens(s.t).forEach(function(w){uniq[w]=1});
+      Object.keys(uniq).forEach(function(w){TRAIN_DF[w]=(TRAIN_DF[w]||0)+1});
+    });
+  }
+  var N=TRAIN_KB.length,qs=trainTokens(prompt),qw={};
+  qs.forEach(function(w){qw[w]=1});
   var scored=TRAIN_KB.map(function(s,i){
-    var t=s.toLowerCase(),sc=0;words.forEach(function(w){if(t.indexOf(w)>=0)sc+=2});
-    return {t:s,s:sc,i:i};
-  }).sort(function(a,b){return b.s-a.s||a.i-b.i}).slice(0,3);
-  var out=scored.filter(function(x){return x.s>0}).map(function(x){return x.t});
-  if(!out.length)out=scored.map(function(x){return x.t});
-  var txt=out.join('\n---\n');
-  return txt.length>2400?txt.slice(0,2400):txt;
+    var toks=trainTokens(s.t),tf={},sc=0;
+    toks.forEach(function(w){tf[w]=(tf[w]||0)+1});
+    Object.keys(qw).forEach(function(w){
+      if(!tf[w])return;
+      var df=TRAIN_DF[w]||1;
+      var idf=Math.log(1+(N-df+0.5)/(df+0.5));      // کلمه کمیاب = وزن بیشتر
+      var f=tf[w];
+      sc+=idf*(f*2.2)/(f+1.2*(0.25+0.75*toks.length/120));
+    });
+    if(hintTopics&&s.k)hintTopics.forEach(function(h){if(s.k.indexOf(h)>=0)sc*=1.6});
+    if(s.k&&s.k.indexOf('کبد')>=0)sc*=2.2;   // قانون اولویت کبد مقدم بر همه
+    return {t:s.t,k:s.k,s:sc,i:i};
+  }).sort(function(a,b){return b.s-a.s||a.i-b.i});
+  var pick=[],used={},perTopic={},budget=2600;
+  // پین اجباری: یک نمونه از قانون کبد همیشه در کانتکست باشد
+  for(var q=0;q<scored.length;q++){
+    if(scored[q].k&&scored[q].k.indexOf('اولویت کبد')>=0){
+      pick.push(scored[q].t);used[scored[q].t.slice(0,60)]=1;
+      perTopic[scored[q].k]=1;budget-=scored[q].t.length;break;
+    }
+  }
+  for(var j=0;j<scored.length&&pick.length<5;j++){
+    var x=scored[j];if(x.s<=0)break;
+    var key=x.t.slice(0,60);if(used[key])continue;
+    // تنوع موضوعی: حداکثر ۲ نمونه از هر جزوه
+    var tp=x.k||'-';if((perTopic[tp]||0)>=2)continue;
+    if(budget-x.t.length<0)continue;
+    used[key]=1;perTopic[tp]=(perTopic[tp]||0)+1;
+    budget-=x.t.length;pick.push(x.t);
+  }
+  if(!pick.length)pick=scored.slice(0,3).map(function(x){return x.t});
+  return pick.join('\n---\n');
 }
 
-function callAI(prompt) {
-  var sysPrompt='تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.';
-  var kb=trainContext(prompt);
-  if(kb)sysPrompt+='\n\n📚 دانش مرجع (بر اساس آن پاسخ بده، به آن پایبند باش):\n'+kb;
+function callAI(prompt, onLive, hintTopics) {
+  var sysPrompt='تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'+NIO_RULE;
+  var kb=trainContext(prompt,hintTopics);
+  if(kb)sysPrompt+='\n\n📚 دانش مرجع از جزوه‌های رسمی نیوشا (معتبرترین منبع — دقیقاً بر اساس این پاسخ بده و از خود چیزی نساز):\n'+kb;
   return new Promise(function(final) {
-    var pending=4,won=false,bestReasoning='';
-    function finish(v){
+    var order=['Rezzz','gem','Openouter','B'];   // بر اساس بنچمارک واقعی
+    var pending=order.length,won=false,bestReasoning='',liveModel=null;
+    function finish(v,model){
       if(won)return;
       if(v&&!/^[\sA-Za-z0-9.,;:()\-+*/=<>\[\]{}"']*$/.test(v)&&v.length>10){won=true;setAI('ok');final(v)}
       else if(v&&v.length>bestReasoning.length)bestReasoning=v;
       if(!won&&--pending===0){won=true;final(bestReasoning||null)}
     }
-    streamModel(WORKER_URL,'Rezzz',prompt,finish,0,sysPrompt);
-    streamModel(WORKER_URL,'Openouter',prompt,finish,0,sysPrompt);
-    streamModel(WORKER_URL,'B',prompt,finish,0,sysPrompt);
-    streamModel(WORKER_URL,'gem',prompt,finish,0,sysPrompt);
+    // رندر تدریجی: اولین مدلی که متن فارسی می‌دهد مالک نمایش می‌شود
+    function delta(model,full){
+      if(!onLive||won)return;
+      if(!liveModel){
+        if(full.length<40||!/[\u0600-\u06FF]/.test(full))return;
+        liveModel=model;setAI('ok');
+      }
+      if(liveModel===model)onLive(full);
+    }
+    order.forEach(function(m){streamModel(WORKER_URL,m,prompt,finish,0,sysPrompt,delta)});
   });
 }
 
@@ -386,6 +622,89 @@ function analyzePixels(data){
   };
 }
 
+/* === اعتبارسنجی سوژه عکس: زبان / عنبیه یا چیز دیگر ===
+   امتیاز پله‌ای از ۱۰. سه حالت:
+   ok=true  , warn=false → عکس خوب، تحلیل عادی
+   ok=true  , warn=true  → عکس قابل قبول ولی ضعیف، تحلیل با هشدار
+   ok=false             → فقط وقتی شاهد قطعی خلاف سوژه هست (وتو) */
+function subjectCheck(px,type){
+  var p=px.pct,g=function(k){return p[k]||0};
+  var sc=0,why=[],note=[],veto=false;
+  if(type==='tongue'){
+    var flesh=g('red')+g('pink')+g('orange')+g('brown')+g('purple');
+    var cold=g('green')+g('blue');
+    if(flesh>=25)sc+=4;
+    else if(flesh>=15)sc+=3;
+    else if(flesh>=8){sc+=2;note.push('زبان بخش کوچکی از کادر است ('+flesh+'%) — نزدیک‌تر عکس بگیرید')}
+    else why.push('رنگ مخاط (قرمز/صورتی) فقط '+flesh+'% کادر است');
+    if(g('warm')>=45)sc+=2;
+    else if(g('warm')>=28)sc+=1;
+    else note.push('نور سرد یا فلورسنت بوده ('+g('warm')+'% رنگ گرم) — دقت رنگ کمتر است');
+    if(cold<20)sc+=2;
+    else if(cold<40){sc+=1;note.push('پس‌زمینه در کادر است ('+cold+'% سبز/آبی)')}
+    else why.push('سبز/آبی غالب است ('+cold+'%) — احتمالاً منظره یا پس‌زمینه');
+    if(g('black')<40)sc+=2;
+    else if(g('black')<62){sc+=1;note.push('عکس کم‌نور است ('+g('black')+'% تاریک)')}
+    else why.push('عکس خیلی تاریک است ('+g('black')+'% سیاه)');
+    // وتو: شاهد قطعی خلاف سوژه — مخاط تقریباً نیست، یا رنگ سرد قاطعانه غالب است (منظره/آسمان)
+    veto=flesh<3||g('black')>=72||(cold>=40&&cold>flesh*2);
+    return {ok:!veto&&sc>=5,warn:note.length>0,score:sc,max:10,why:why.concat(note),note:note,subj:'زبان'};
+  }
+  var iris=g('brown')+g('green')+g('blue')+g('grey');
+  var skin=g('red')+g('pink')+g('orange');
+  if(iris>=20)sc+=4;
+  else if(iris>=12)sc+=3;
+  else if(iris>=6){sc+=2;note.push('رنگ عنبیه کم‌رنگ یا کوچک در کادر است ('+iris+'%)')}
+  else why.push('رنگ عنبیه (قهوه‌ای/سبز/آبی/خاکستری) فقط '+iris+'% است');
+  if(g('white')>=8)sc+=2;
+  else if(g('white')>=3){sc+=1;note.push('سفیدی اسکلرا کم دیده می‌شود — کادر خیلی نزدیک است')}
+  else note.push('سفیدی چشم در کادر نیست ('+g('white')+'%)');
+  if(g('black')>=5)sc+=2;
+  else if(g('black')>=2)sc+=1;
+  else note.push('مردمک تیره واضح نیست — شاید نور بازتاب داده');
+  if(skin<45)sc+=2;
+  else if(skin<68){sc+=1;note.push('پوست دور چشم بخش زیادی از کادر است ('+skin+'%)')}
+  else why.push('قرمزی/صورتی غالب است ('+skin+'%) — شاید عکس زبان یا پوست فرستادید');
+  // وتو: هر چشم واقعی مردمک تیره دارد؛ بدون آن و بدون بافت گرمِ صورت، عکس چشم نیست
+  veto=iris<4||(skin>=68&&iris<14)||(g('black')<3&&g('warm')<30);
+  return {ok:!veto&&sc>=5,warn:note.length>0,score:sc,max:10,why:why.concat(note),note:note,subj:'عنبیه چشم'};
+}
+// هشدار نرم وقتی عکس قابل قبول ولی ضعیف است — تحلیل ادامه پیدا می‌کند
+function subjectNote(chk){
+  if(!chk.note.length)return '';
+  var h='<div style="background:#fff8e1;border-right:3px solid #ffb300;padding:7px 9px;border-radius:6px;font-size:.73rem;line-height:1.8;margin:6px 0">';
+  h+='⚠️ کیفیت عکس متوسط است ('+chk.score+'/'+chk.max+') — تحلیل انجام می‌شود ولی برای دقت بیشتر:';
+  h+='<ul style="padding-right:16px;margin:4px 0 0">';
+  chk.note.slice(0,3).forEach(function(x){h+='<li>'+x+'</li>'});
+  h+='</ul></div>';
+  return h;
+}
+// پیشنهاد جایگزین وقتی عکس مربوط نیست
+function subjectHelp(chk,type){
+  var h='<div class="danger">🔍 در این عکس '+chk.subj+' پیدا نشد ('+chk.score+'/'+chk.max+' نشانه).</div>';
+  if(chk.why.length){
+    h+='<p style="font-size:.78rem;margin-top:6px">چرا:</p><ul style="font-size:.75rem;line-height:1.9;padding-right:18px">';
+    chk.why.slice(0,3).forEach(function(x){h+='<li>'+x+'</li>'});
+    h+='</ul>';
+  }
+  h+='<p style="font-size:.78rem;margin-top:8px;font-weight:700">✅ راه‌حل:</p><ul style="font-size:.75rem;line-height:1.9;padding-right:18px">';
+  if(type==='tongue'){
+    h+='<li>زبان را کامل بیرون بیاورید تا کادر را پر کند</li>';
+    h+='<li>نور طبیعی روبروی پنجره — بدون فلش و نور رنگی</li>';
+    h+='<li>قبل از عکس چای/قهوه/شیرینی نخورید (رنگ زبان عوض می‌شود)</li>';
+    h+='<li>صبح ناشتا بهترین زمان است</li>';
+  } else {
+    h+='<li>دوربین را نزدیک کنید تا عنبیه بیشتر کادر را بگیرد</li>';
+    h+='<li>چشم را کامل باز نگه دارید، نگاه مستقیم به دوربین</li>';
+    h+='<li>نور از کنار بتابد — فلش مستقیم بازتاب می‌سازد</li>';
+    h+='<li>عینک و لنز رنگی را بردارید</li>';
+  }
+  h+='</ul>';
+  h+='<p style="font-size:.78rem;margin-top:8px">🧬 راه دوم بدون عکس: پرسش‌نامه مزاج‌شناسی مستقل از دوربین است و همان پکیج کامل را می‌دهد.</p>';
+  h+='<button class="btn" style="margin-top:8px" onclick="go(\'quiz\')">🧬 رفتن به پرسش‌نامه مزاج</button>';
+  return h;
+}
+
 function formatPixelData(px,type){
   var h='📊 داده پیکسلی:\n';
   h+='میانگین RGB: '+px.avgR+','+px.avgG+','+px.avgB+'\n';
@@ -442,31 +761,41 @@ function analyze(type){
       ctx.putImageData(idata,0,0);
       var px=analyzePixels(idata.data);
       var pixelText=formatPixelData(px,type);
+      var chk=subjectCheck(px,type);
+      // کیفیت پایین عکس را به AI هم اطلاع بده تا با احتیاط تفسیر کند
+      if(chk.ok&&chk.warn)pixelText+='\n⚠️ کیفیت عکس متوسط ('+chk.score+'/'+chk.max+'): '+chk.note.slice(0,2).join(' | ')+'\nتفسیر رنگ را با احتیاط بنویس و اگر داده قطعی نیست بگو «نیاز به عکس بهتر»، اما پکیج را کامل بده.';
 
       $(type==='tongue'?'t-img':'i-img').src=e.target.result;
       $(type==='tongue'?'t-up':'i-up').style.display='none';
       $(type==='tongue'?'t-pv':'i-pv').style.display='block';
-      var localHTML='<div class="card"><h2>📊 تحلیل پیکسلی '+(type==='tongue'?'زبان':'عنبیه')+'</h2>';
-      localHTML+='<div class="clr-grid">';
       var top=Object.entries(px.pct).sort(function(a,b){return b[1]-a[1]}).slice(0,6);
-      top.forEach(function(c){
-        if(c[1]>0) localHTML+='<div class="clr-item" style="background:#f0f0f0">'+c[0]+': '+c[1]+'%</div>';
-      });
-      localHTML+='</div>';
-      localHTML+='<p style="font-size:.75rem;color:#999">RGB avg: '+px.avgR+','+px.avgG+','+px.avgB+'</p>';
+      var clrGrid='<div class="clr-grid">'+top.map(function(c){return c[1]>0?'<div class="clr-item" style="background:#f0f0f0">'+c[0]+': '+c[1]+'%</div>':''}).join('')+'</div>';
+      var RES=type==='tongue'?'t-res':'i-res';
+
+      // اگر عکس زبان/عنبیه نیست — تحلیل مزاجی نکن، راه‌حل بده
+      if(!chk.ok){
+        $(RES).innerHTML='<div class="card"><h2>📸 عکس مناسب نیست</h2>'+clrGrid+subjectHelp(chk,type)+'</div>';
+        return;
+      }
+
+      var localHTML='<div class="card"><h2>📊 تحلیل پیکسلی '+(type==='tongue'?'زبان':'عنبیه')+'</h2>';
+      localHTML+=clrGrid;
+      localHTML+='<p style="font-size:.75rem;color:#999">RGB avg: '+px.avgR+','+px.avgG+','+px.avgB+' — اعتبار سوژه: '+chk.score+'/'+chk.max+(chk.warn?' ⚠️':' ✅')+'</p>';
+      localHTML+=subjectNote(chk);
       localHTML+='<div class="spinner"></div><p style="text-align:center;font-size:.8rem">⏳ انتظار تفسیر AI...</p>';
       localHTML+='</div>';
       $(type==='tongue'?'t-res':'i-res').innerHTML=localHTML;
       
       // STEP 2: Send pixel data to AI for interpretation
   var prompt;
-  var PKG='\n\n📦 بخش الزامی پکیج شخصی (از دانش مرجع/کاتالوگ نیوشانک):\n'+
-    '🍵 حداقل ۵ وعده دمنوش‌تراپی: هر کدام «نام دمنوش + زمان مصرف (صبح/شب/بعد غذا…) + دلیل مزاجی»\n'+
-    '🫘 دانه‌ها بر اساس هدف: کینوا/چیا/تخم کتان/خاکشیر/خرفه (مقدار و روش مصرف)\n'+
-    '🫒 روغن کاژان فشرده‌سرد متناسب عارضه: کتان/خارمریم/بادام شیرین/تخم کدو/فندق/گردو + نحوه مصرف\n'+
-    '⚠️ فقط محصولات نیوشانک: دمنوش‌ها و روغن‌ها فقط از کاتالوگ نیوشا — محصول/برند خارج کاتالوگ پیشنهاد نکن\n'+
+  var PKG='\n\n📦 بخش الزامی پکیج شخصی (فقط محصولات موجود در سایت newshanik.ir):\n'+
+    '🍵 حداقل ۵ وعده دمنوش‌تراپی: هر کدام «نام دقیق دمنوش از کاتالوگ + قیمت از کاتالوگ + زمان مصرف (صبح/شب/بعد غذا…) + دلیل مزاجی» — هر دمنوش فقط یک بار ذکر شود (تکرار ممنوع)\n'+
+    '🫘 دانه‌ها بر اساس هدف — فقط از بخش دانه‌های کاتالوگ (مقدار و روش مصرف + قیمت کاتالوگ)\n'+
+    '🫒 روغن فشرده‌سرد متناسب عارضه — فقط از بخش روغن‌های کاتالوگ + نحوه مصرف + قیمت کاتالوگ\n'+
+    '⚠️ پکیج پیشنهادی فقط محصولات نیوشانک — همه اقلام (دمنوش‌ها، دانه‌ها، روغن‌ها) فقط از کاتالوگ نیوشا با قیمت دقیق کاتالوگ — هیچ محصول/برند/داروی خارج از این لیست پیشنهاد نکن\n'+
     '🏠 راهکارهای خانگی: حداقل ۳ راهکار عملی برای بهبود\n'+
     '🍽 رژیم اختصاصی: غذاهای «بخور» و «نخور» متناسب با مزاج شناسایی‌شده\n'+
+    '⚡ فشرده بنویس: بدون جدول، بدون تیتر تکراری، هر قلم فقط یک خط کوتاه. هر ۵ بخش (دمنوش، دانه، روغن، راهکار خانگی، رژیم) باید کامل نوشته شود — وسط پاسخ قطع نکن و بخش رژیم را تا آخر «نخور» تمام کن. فقط فارسی سالم بنویس؛ هیچ کلمه انگلیسی یا کد در متن نباشد.\n'+
     'این بخش را حذف نکن و کمتر از ۵ وعده ننویس.';
   if(type==='tongue'){
     prompt='تو متخصص طب سنتی ایرانی هستی. تحلیل پیکسلی زبان بیمار:\n\n'+pixelText+
@@ -486,20 +815,24 @@ function analyze(type){
       '\nفارسی با ایموجی. کل پاسخ حداکثر ۴۰۰ کلمه.';
   }
       
-      callAI(prompt).then(function(result){
+      var liveHdr='<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'زبان':'عنبیه')+'</h2>'+clrGrid;
+      function fmtAI(t){return t.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}
+      // رندر تدریجی — کاربر از همان ثانیه اول متن می‌بیند
+      function onLive(partial){
+        $(RES).innerHTML=liveHdr+
+          '<div class="ai-tag"><div class="ai-dot"></div> تفسیر AI در حال نوشتن…</div>'+
+          '<div style="font-size:.82rem;line-height:2">'+fmtAI(partial)+'<span style="opacity:.5">▌</span></div></div>';
+      }
+      callAI(prompt,onLive,['کبد','مزاج','پک','خواص',type==='tongue'?'زبان':'عنبیه']).then(function(result){
         if(result&&!aiBad(result)){
           saveLabeled(type,cv,px,result);
-          var fmt=result.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
-          $(type==='tongue'?'t-res':'i-res').innerHTML=
-            '<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'زبان':'عنبیه')+'</h2>'+
-            '<div class="clr-grid">'+top.map(function(c){return c[1]>0?'<div class="clr-item" style="background:#f0f0f0">'+c[0]+': '+c[1]+'%</div>':''}).join('')+'</div>'+
+          var fixed=fixPrices(result);
+          $(RES).innerHTML=liveHdr+
             '<div class="ai-tag"><div class="ai-dot"></div> تفسیر AI</div>'+
-            '<div style="font-size:.82rem;line-height:2">'+fmt+'</div>'+
+            '<div style="font-size:.82rem;line-height:2">'+fmtAI(fixed)+'</div>'+
             '<div class="warn">⚠️ کمکی — تشخیص قطعی نیست.</div></div>';
         } else {
-          $(type==='tongue'?'t-res':'i-res').innerHTML=
-            '<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'زبان':'عنبیه')+'</h2>'+
-            '<div class="clr-grid">'+top.map(function(c){return c[1]>0?'<div class="clr-item" style="background:#f0f0f0">'+c[0]+': '+c[1]+'%</div>':''}).join('')+'</div>'+
+          $(RES).innerHTML=liveHdr+
             '<div class="danger">⚠️ AI وصل نشد. فقط تحلیل پیکسلی نمایش داده شد.</div>'+
             localFallback(type,px)+'</div>';
         }
@@ -592,38 +925,34 @@ function calcQ(){
     '\nترکیب مزاج: صفراوی '+pct[0]+'% | دمی '+pct[1]+'% | بلغمی '+pct[2]+'% | سوداوی '+pct[3]+'%'+
     '\nطب غالب: '+dom+
     '\n\nتحلیل:\n۱. نقاط قوت و ضعف مزاجی\n۲. جمع‌بندی\n'+
-    '📦 پکیج شخصی فقط محصولات نیوشانک: حداقل ۵ وعده دمنوش + دانه‌ها (کینوا/چیا/خاکشیر بر اساس هدف) + روغن کاژان متناسب عارضه (نام + زمان + دلیل مزاجی)\n'+
+    '📦 پکیج شخصی فقط محصولات نیوشا (همه اقلام فقط از کاتالوگ با قیمت‌ها): حداقل ۵ وعده دمنوش از کاتالوگ + دانه مناسب از کاتالوگ + روغن مناسب از کاتالوگ (هر قلم: نام دقیق + قیمت کاتالوگ + زمان + دلیل مزاجی) — هیچ محصول خارج از کاتالوگ نیوشانک پیشنهاد نشود\n'+
     '🏠 حداقل ۳ راهکار خانگی برای بهبود\n'+
-    '🍽 رژیم اختصاصی: بخشور/نخور مزاج شما\n'+
+    '🍽 رژیم اختصاصی: بخور/نخور مزاج شما\n'+
+    '⚡ فشرده بنویس: بدون جدول، هر قلم یک خط کوتاه. همه بخش‌ها را کامل بنویس و وسط پاسخ قطع نکن — بخش رژیم را تا آخر «نخور» تمام کن. فقط فارسی سالم بنویس؛ هیچ کلمه انگلیسی یا کد در متن نباشد.\n'+
+    '🍵 هر دمنوش فقط یک بار ذکر شود (تکرار ممنوع).\n'+
     'فارسی با ایموجی. حداکثر ۴۵۰ کلمه.';
   
-  // Show local result first
-  var html='<div class="card"><h2>🧬 نتیجه</h2>';
-  html+=mRow('صفراوی',pct[0],'#e76f51');
-  html+=mRow('دمی',pct[1],'#f4a261');
-  html+=mRow('بلغمی',pct[2],'#457b9d');
-  html+=mRow('سوداوی',pct[3],'#264653');
-  html+='<p style="margin-top:8px;font-weight:700;color:var(--p)">طب غالب: '+dom+'</p>';
-  html+='<div class="spinner"></div><p style="text-align:center;font-size:.8rem">⏳ انتظار تفسیر AI...</p>';
-  html+='</div>';
-  $('q-res').innerHTML=html;
-  
-  callAI(prompt).then(function(aiText){
-    html='<div class="card"><h2>🧬 نتیجه</h2>';
-    html+=mRow('صفراوی',pct[0],'#e76f51');
-    html+=mRow('دمی',pct[1],'#f4a261');
-    html+=mRow('بلغمی',pct[2],'#457b9d');
-    html+=mRow('سوداوی',pct[3],'#264653');
-    html+='<p style="margin-top:8px;font-weight:700;color:var(--p)">طب غالب: '+dom+'</p>';
+  var qHdr='<div class="card"><h2>🧬 نتیجه</h2>'+
+    mRow('صفراوی',pct[0],'#e76f51')+mRow('دمی',pct[1],'#f4a261')+
+    mRow('بلغمی',pct[2],'#457b9d')+mRow('سوداوی',pct[3],'#264653')+
+    '<p style="margin-top:8px;font-weight:700;color:var(--p)">طب غالب: '+dom+'</p>';
+  $('q-res').innerHTML=qHdr+'<div class="spinner"></div><p style="text-align:center;font-size:.8rem">⏳ در حال تفسیر AI...</p></div>';
+
+  function qFmt(t){return t.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}
+  callAI(prompt,function(partial){
+    $('q-res').innerHTML=qHdr+'<div class="ai-tag"><div class="ai-dot"></div>تفسیر AI در حال نوشتن…</div>'+
+      '<div style="font-size:.82rem;line-height:2">'+qFmt(partial)+'<span style="opacity:.5">▌</span></div></div>';
+  },['کبد','مزاج','پک','مشاوره']).then(function(aiText){
+    var html2=qHdr;
     if(aiText&&!aiBad(aiText)){
-      html+='<div class="ai-tag"><div class="ai-dot"></div>تفسیر AI</div>';
-      html+='<div style="font-size:.82rem;line-height:2">'+aiText.replace(/\n/g,'<br>')+'</div>';
+      html2+='<div class="ai-tag"><div class="ai-dot"></div>تفسیر AI</div>';
+      html2+='<div style="font-size:.82rem;line-height:2">'+qFmt(fixPrices(aiText))+'</div>';
     } else {
-      html+=localInterp(dom);
-      html+='<div class="danger">⚠️ AI وصل نشد</div>';
+      html2+=localInterp(dom);
+      html2+='<div class="danger">⚠️ AI وصل نشد</div>';
     }
-    html+='</div>';
-    $('q-res').innerHTML=html;
+    html2+='</div>';
+    $('q-res').innerHTML=html2;
     $('q-btn').disabled=false;
     $('q-btn').innerHTML='🔍 محاسبه مزاج';
     updProducts();
@@ -642,41 +971,47 @@ function localInterp(d){
 
 function mRow(l,v,c){return'<div class="meter-l"><span>'+l+' '+v+'%</span></div><div class="meter"><div class="meter-f" style="width:'+v+'%;background:'+c+'"></div></div>';}
 
-/* === PRODUCTS === */
-var Prods=[
-  {name:'دمنوش آرامش',icon:'🌙',color:'#e8eaf6',type:'آرامش',tags:['دمی','بلغمی'],desc:'سنبل‌الطیب، بابونه',warn:'ناشتا ندهید'},
-  {name:'دمنوش هضم',icon:'🍵',color:'#e8f5e9',type:'گوارش',tags:['بلغمی','دمی'],desc:'نعناع، رازیانه'},
-  {name:'دمنوش انرژی',icon:'⚡',color:'#fff3e0',type:'انرژی',tags:['سوداوی','بلغمی'],desc:'دارچین، زنجبیل'},
-  {name:'دمنوش سمزدایی',icon:'🌿',color:'#e0f2f1',type:'تصفیه',tags:['صفراوی','دمی'],desc:'خارمریبط، گزنه'},
-  {name:'معجون رویایی',icon:'💫',color:'#fce4ec',type:'آرامش',tags:['دمی','بلغمی'],desc:'آرامش عمیق',warn:'فقط شب'},
-  {name:'معجون مصونیت',icon:'🛡️',color:'#f3e5f5',type:'ایمنی',tags:['همه'],desc:'سماق، عسل'},
-  {name:'روغن نعناعی',icon:'💧',color:'#e0f7fa',type:'ماساژ',tags:['دمی','صفراوی'],desc:'خنک‌کننده'},
-  {name:'روغن گرم',icon:'🔥',color:'#fbe9e7',type:'ماساژ',tags:['سوداوی','بلغمی'],desc:'گرم‌کننده'},
-  {name:'چای سبز نعناعی',icon:'🍃',color:'#e8f5e9',type:'متابولیسم',tags:['دمی','صفراوی'],desc:'متابولیسم'},
-];
+/* === PRODUCTS (کاتالوگ واقعی نیوشا — فقط newshanik.ir) === */
+var CAT_META={
+  'دمنوش خالص':{i:'🍵',cl:'#e8f5e9',tp:'دمنوش'},
+  'دمنوش ترکیبی':{i:'🌿',cl:'#e0f2f1',tp:'دمنوش ترکیبی'},
+  'دانه':{i:'🫛',cl:'#fff3e0',tp:'دانه'},
+  'روغن خالص':{i:'💧',cl:'#e0f7fa',tp:'روغن'}
+};
+var Prods=NIO_PRODUCTS.map(function(x){
+  var m=CAT_META[x.c]||CAT_META['دمنوش خالص'];
+  return{name:x.n,icon:m.i,color:m.cl,type:m.tp,tags:x.t,desc:x.d,price:x.p,url:x.u,warn:(x.n.indexOf('رویایی')>=0?'فقط شب':'')};
+});
 
 function updProducts(){
-  var tags=tempRes?[tempRes.dom]:['همه'];
-  var matched=[],other=[];
-  Prods.forEach(function(p){
-    var found=false;
-    p.tags.forEach(function(t){if(tags.indexOf(t)>=0||t==='همه')found=true});
-    if(found)matched.push(p);else other.push(p);
-  });
   var h='';
-  if(matched.length){h+='<div class="card"><h2>✅ پیشنهاد ویژه</h2>';matched.forEach(function(p){h+=pCard(p)});h+='</div>';}
-  if(other.length){h+='<div class="card"><h2>📦 سایر</h2>';other.forEach(function(p){h+=pCard(p)});h+='</div>';}
-  $('p-list').innerHTML=h||'<div class="card"><p>پرسش‌نامه یا تحلیل عکس انجام دهید.</p></div>';
+  if(!tempRes){
+    h='<div class="card"><h2>📦 همه محصولات نیوشا</h2><p style="font-size:.75rem;color:#999">پرسش‌نامه یا تحلیل انجام دهید تا پیشنهاد ویژه مزاج شما نمایش داده شود</p>';
+    Prods.forEach(function(p){h+=pCard(p)});
+    h+='</div>';
+  } else {
+    var matched=[],other=[];
+    Prods.forEach(function(p){
+      var found=false;
+      p.tags.forEach(function(t){if(t===tempRes.dom||t==='همه')found=true});
+      if(found)matched.push(p);else other.push(p);
+    });
+    if(matched.length){h+='<div class="card"><h2>✅ پیشنهاد ویژه مزاج '+tempRes.dom+'</h2>';matched.forEach(function(p){h+=pCard(p)});h+='</div>';}
+    if(other.length){h+='<div class="card"><h2>📦 سایر محصولات نیوشا</h2>';other.forEach(function(p){h+=pCard(p)});h+='</div>';}
+  }
+  $('p-list').innerHTML=h||'<div class="card"><p>محصولی یافت نشد.</p></div>';
+  var u=$('nio-upd');if(u)u.textContent='قیمت مصرف‌کننده — بروزرسانی: '+NIO_UPD+' — منبع: newshanik.ir';
 }
 
-function pCard(p){return'<div class="pc" onclick="showP(\''+p.name+'\')"><div class="ico" style="background:'+p.color+'">'+p.icon+'</div><div class="inf"><h4>'+p.name+' <span class="badge">'+p.type+'</span></h4><p>'+p.desc+'</p></div></div>';}
+function pCard(p){return'<div class="pc" onclick="showP(\''+p.name+'\')"><div class="ico" style="background:'+p.color+'">'+p.icon+'</div><div class="inf"><h4>'+p.name+' <span class="badge">'+p.type+'</span></h4><p>'+p.desc+'</p><p style="font-weight:700;color:var(--p);font-size:.85rem">💰 '+fmtT(p.price)+' تومان</p></div></div>';}
 
 function showP(n){
   Prods.forEach(function(p){
     if(p.name===n){
       var h='<h2>'+p.icon+' '+p.name+'</h2><p style="margin:10px 0;line-height:1.8">'+p.desc+'</p>';
+      h+='<p style="font-size:1.1rem;font-weight:800;color:var(--p)">💰 '+fmtT(p.price)+' تومان</p>';
       if(p.warn)h+='<div class="danger">⚠️ '+p.warn+'</div>';
-      h+='<div class="warn">💡 با مشورت مشاور.</div>';
+      h+='<div class="warn">💡 مصرف با مشورت مشاور — <a href="'+p.url+'" target="_blank" style="color:var(--p)">صفحه محصول در newshanik.ir</a></div>';
       $('m-c').innerHTML=h;
       $('m-o').classList.add('show');
     }
@@ -713,6 +1048,7 @@ function exportLabeled(){
 
 /* === INIT === */
 initQ();
+loadNioPrices();
 updProducts();
 probeAI();
 updateLblCount();
