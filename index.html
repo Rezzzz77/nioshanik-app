@@ -269,10 +269,11 @@ function loadNioPrices(){
   refreshNioPrices(true);
 }
 
-function streamModel(base, model, prompt, finish, capMs, sys, onDelta) {
+function streamModel(base, model, prompt, finish, capMs, sys, onDelta, imgBase64) {
   var ctrl=new AbortController();
   var timer=setTimeout(function(){ctrl.abort()},capMs||90000);
-  var body=JSON.stringify({model:model,messages:[{role:'system',content:sys||'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},{role:'user',content:prompt}],max_tokens:4096,stream:true});
+  var userMsg=imgBase64?{role:'user',content:[{type:'text',text:prompt},{type:'image_url',image_url:{url:'data:image/jpeg;base64,'+imgBase64}}]}:{role:'user',content:prompt};
+  var body=JSON.stringify({model:model,messages:[{role:'system',content:sys||'تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'},userMsg],max_tokens:4096,stream:true});
   fetch(base,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -458,7 +459,7 @@ function trainContext(prompt,hintTopics){
   return pick.join('\n---\n');
 }
 
-function callAI(prompt, onLive, hintTopics) {
+function callAI(prompt, onLive, hintTopics, imgBase64) {
   var sysPrompt='تو یک متخصص طب سنتی ایرانی هستی. به فارسی کامل و روان پاسخ بده. با ایموجی.'+NIO_RULE;
   var kb=trainContext(prompt,hintTopics);
   if(kb)sysPrompt+='\n\n📚 دانش مرجع از جزوه‌های رسمی نیوشا (معتبرترین منبع — دقیقاً بر اساس این پاسخ بده و از خود چیزی نساز):\n'+kb;
@@ -480,7 +481,7 @@ function callAI(prompt, onLive, hintTopics) {
       }
       if(liveModel===model)onLive(full);
     }
-    order.forEach(function(m){streamModel(WORKER_URL,m,prompt,finish,0,sysPrompt,delta)});
+    order.forEach(function(m){streamModel(WORKER_URL,m,prompt,finish,0,sysPrompt,delta,imgBase64)});
   });
 }
 
@@ -748,6 +749,68 @@ function formatPixelData(px,type){
 }
 
 /* === IMAGE ANALYSIS === */
+
+
+// فشرده‌سازی عکس برای ارسال به AI — حداکثر 800px طولی
+function compressForAI(img, maxPx) {
+  maxPx=maxPx||800;
+  var sc=Math.min(maxPx/img.width,maxPx/img.height,1);
+  if(sc>=1)return null; // نیاز به فشرده نیست
+  var cv2=document.createElement('canvas');
+  cv2.width=Math.round(img.width*sc);cv2.height=Math.round(img.height*sc);
+  var c2=cv2.getContext('2d');c2.drawImage(img,0,0,cv2.width,cv2.height);
+  return cv2.toDataURL('image/jpeg',0.75).split(',')[1];
+}
+
+// تحلیل ساختاری عنبیه — تشخیص الیاف، حفره‌ها، حلقه و شیارها
+function extractIrisFeatures(imgData, w, h) {
+  var gray=new Uint8Array(w*h);
+  for(var i=0;i<w*h;i++){var o=i*4;gray[i]=Math.round(0.299*imgData[o]+0.587*imgData[o+1]+0.114*imgData[o+2]);}
+  var edges=new Uint8Array(w*h);
+  for(var y=1;y<h-1;y++)for(var x=1;x<w-1;x++){
+    var i=y*w+x;var gx=-gray[(y-1)*w+x-1]+gray[(y-1)*w+x+1]-2*gray[y*w+x-1]+2*gray[y*w+x+1]-gray[(y+1)*w+x-1]+gray[(y+1)*w+x+1];
+    var gy=-gray[(y-1)*w+x-1]-2*gray[(y-1)*w+x]-gray[(y-1)*w+x+1]+gray[(y+1)*w+x-1]+2*gray[(y+1)*w]+gray[(y+1)*w+x+1];
+    edges[i]=Math.min(255,Math.sqrt(gx*gx+gy*gy));
+  }
+  var total=0;for(var i=0;i<w*h;i++)total+=edges[i];
+  var edgeDensity=total/(w*h*255);
+  var radialSum=0,radialCount=0,cx=w/2,cy=h/2;
+  for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+    var dx=x-cx,dy=y-cy,r=Math.sqrt(dx*dx+dy*dy);
+    if(r>Math.min(w,h)*0.15&&r<Math.min(w,h)*0.45){
+      var angle=Math.atan2(dy,dx);
+      var section=Math.floor((angle+Math.PI)/(2*Math.PI)*12);
+      if(section>=0&&section<12){radialSum+=edges[y*w+x];radialCount++;}
+    }
+  }
+  var radialAvg=radialCount?radialSum/radialCount/255:0;
+  var darkSpots=0,lightSpots=0;
+  for(var y=2;y<h-2;y+=3)for(var x=2;x<w-2;x+=3){
+    var v=gray[y*w+x];
+    var blockAvg=0,bc=0;
+    for(var dy=-3;dy<=3;dy+=3)for(var dx=-3;dx<=3;dx+=3){blockAvg+=gray[Math.max(0,Math.min(h-1,y+dy))*w+Math.max(0,Math.min(w-1,x+dx))];bc++;}
+    blockAvg/=bc;
+    if(v<blockAvg-40)darkSpots++;
+    if(v>blockAvg+40)lightSpots++;
+  }
+  var ringDetect=0;
+  var midR=Math.min(w,h)*0.33;
+  var ringPixels=0,ringEdgeSum=0;
+  for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+    var r=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
+    if(r>midR-3&&r<midR+3){ringPixels++;ringEdgeSum+=edges[y*w+x];}
+  }
+  ringDetect=ringPixels?(ringEdgeSum/ringPixels)/255:0;
+  return {
+    edgeDensity:Math.round(edgeDensity*1000)/10,
+    radialFibrils:Math.round(radialAvg*1000)/10,
+    darkSpots:darkSpots,
+    lightSpots:lightSpots,
+    ringIndicator:Math.round(ringDetect*1000)/10,
+    summary:'تشخیص ساختاری: چگالی لبه='+Math.round(edgeDensity*100)+'% | الیاف شعاعی='+Math.round(radialAvg*100)+'% | لکه‌های تیره='+darkSpots+' | لکه‌های روشن='+lightSpots+' | نشانگر حلقه='+Math.round(ringDetect*100)+'%'
+  };
+}
+
 function analyze(type){
   var inp=$(type==='tongue'?'t-file':'i-file');
   var file=inp.files[0];
@@ -828,14 +891,30 @@ function analyze(type){
       '۵. جمع‌بندی تحلیل در ۳-۴ خط'+PKG+
       '\nفارسی با ایموجی. کل پاسخ حداکثر ۵۵۰ کلمه.';
   } else {
-    prompt='تو متخصص عنبیه‌شناسی سنتی هستی. تحلیل پیکسلی چشم ('+irisEye+'):\n\n'+pixelText+
-      '\n\nبر اساس این داده‌های رنگی:\n'+
-      '۱. رنگ عنبیه (قهوه‌ای=نرمال، تیره=سوداوی، روشن=بلغمی/دمی)\n'+
-      '۲. نشانه‌ها (تیرگی=ossawa، قرمزی=صفرا)\n'+
-      '۳. گرایش مزاجی\n'+
-      EFFECTS+
-      '۵. جمع‌بندی تحلیل در ۳-۴ خط'+PKG+
-      '\nفارسی با ایموجی. کل پاسخ حداکثر ۵۵۰ کلمه.';
+    // تحلیل پیشرفته عنبیه: عکس واقعی + ویژگی‌های ساختاری استخراج‌شده از Canvas
+    var iCv=document.createElement('canvas');iCv.width=cv.width;iCv.height=cv.height;
+    var iCtx=iCv.getContext('2d');iCtx.drawImage(cv,0,0);
+    var iData=iCtx.getImageData(0,0,iCv.width,iCv.height);
+    var feat=extractIrisFeatures(iData.data,iCv.width,iCv.height);
+    var irisHint='\n\n🔬 ویژگی‌های ساختاری استخراج‌شده از تصویر:\n'+
+      feat.summary+'\n'+
+      '— الیاف شعاعی (Fibrils): '+feat.radialFibrils+'% ← هرچه بالاتر، الیاف متراکم‌تر\n'+
+      '— لکه‌های تیره (Pigments): '+feat.darkSpots+' عدد ← نشانه تجمع سموم یا چربی\n'+
+      '— لکه‌های روشن (Lacunae): '+feat.lightSpots+' عدد ← نشانه ضعف یا فرسودگی اندام\n'+
+      '— نشانگر حلقه (Ring): '+feat.ringIndicator+'% ← احتمال حلقه کلسترول\n'+
+      '— چگالی لبه (Edge): '+feat.edgeDensity+'% ← الیاف اطراف عنبیه\n'+
+      'این اعداد را در کنار عکس واقعی ببین و تفسیر کن.\n';
+    prompt='تو متخصص عنبیه‌شناسی سنتی هستی. عکس واقعی چشم ('+irisEye+') را با دقت ببین و نشانه‌های ساختاری را تحلیل کن:\n\n'+
+      '۱. 🎨 رنگ عنبیه و مزاج اولیه\n'+
+      '۲. 📐 الیاف شعاعی (Fibrils): فشرده/سست/شکسته — الیاف متراکم=مزاج قوی، سست=بلغم\n'+
+      '۳. 🔵 حفره‌ها و لکه‌ها (Lacunae/Pigments): تعداد، اندازه، مکان، رنگ — هر لکه یک اندام\n'+
+      '۴. ⭕ حلقه کلسترول (Sodium Lipid Ring): حلقه سفید در لبه بیرونی=چربی خون بالا\n'+
+      '۵. 📏 شیارها (Furrows): شعاعی=التهاب، انقباضی=تنش عصبی\n'+
+      '۶. 🩸 رگ‌ها و عروق: رگ قرمز بنفش=التهاب/فشار خون\n'+
+      '۷. 👁 مردمک: اندازه و شکل — ریز=بلغم، درشت=صفرا\n'+
+      irisHint+EFFECTS+
+      '۸. جمع‌بندی تحلیل: مزاج + نشانه‌های مهم + احتمال مشکلات + پیشنهاد'+PKG+
+      '\nحتماً عکس واقعی را با اعداد ساختاری ترکیب کن و نشان بده کدام نشانه کجا دیده می‌شود.\nفارسی با ایموجی. کل پاسخ حداکثر ۶۵۰ کلمه.';
   }
       
       var liveHdr='<div class="card"><h2>📊 تحلیل '+(type==='tongue'?'زبان':'عنبیه')+'</h2>'+clrGrid;
@@ -846,7 +925,8 @@ function analyze(type){
           '<div class="ai-tag"><div class="ai-dot"></div> تفسیر AI در حال نوشتن…</div>'+
           '<div style="font-size:.82rem;line-height:2">'+fmtAI(partial)+'<span style="opacity:.5">▌</span></div></div>';
       }
-      callAI(prompt,onLive,['کبد','مزاج','پک','خواص',type==='tongue'?'زبان':'عنبیه']).then(function(result){
+      var irisImgB64=(type==='iris')?(compressForAI(img,800)||e.target.result.split(',')[1]):null;
+      callAI(prompt,onLive,['کبد','مزاج','پک','خواص','تداخل',type==='tongue'?'زبان':'عنبیه'],irisImgB64).then(function(result){
         if(result&&!aiBad(result)){
           saveLabeled(type,cv,px,result);
           var fixed=fixPrices(result);
