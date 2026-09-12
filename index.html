@@ -735,7 +735,7 @@ function callAI(prompt, onLive, hintTopics, imgBase64) {
      اندازه‌گیری‌شده گذاشته شده‌اند. */
   var CAP=140000;                      // سقف عمر هر stream
   var PKG_MAX=7000;                    // سقف طول پاسخ پکیجی؛ بیشتر از این یعنی تولید مهارشده
-  var GRACE=isPkg?95000:0;             // سقف صبر برای «پاسخ منطبق»
+  var GRACE=isPkg?110000:0;            // سقف صبر برای «پاسخ منطبق» — بعد از بدترین زمانِ کامل‌شدن (B ~۱۰۲s) تا پاسخِ در حال نوشتن نصفه برنداشته شود
   var HARD=isPkg?135000:0;              // سقف مطلق انتظار برای پاسخ پکیجی
   return new Promise(function(final) {
     /* ترتیب مسابقه — بنچمارک زندهٔ ۱۳ سپتامبر روی بک‌اند 9router.
@@ -840,7 +840,7 @@ var NIO_LAST_AUDIT=null,NIO_PKG_WAIT=null;
 function setAI(st){
   var d=$('aiDot'),t=$('aiTxt');if(!d||!t)return;
   d.className='ai-dot'+(st==='ok'?'':st==='off'?' off':' wait');
-  t.textContent=st==='ok'?'✅ هوش مصنوعی فعال':st==='off'?'🔴 آفلاین — تحلیل محلی':'⏳ اتصال هوش مصنوعی...';
+  t.textContent=st==='ok'?'✅ هوش مصنوعی فعال':st==='off'?'🔴 آفلاین — تحلیل محلی':'⏳ اتصال هوش مصنوعی… (مدل‌های رایگان گاهی تا ۲ دقیقه)';
 }
 function probeAI(){
   loadTraining();
