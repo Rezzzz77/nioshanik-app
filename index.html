@@ -148,6 +148,7 @@ var WORKER_URL='https://nioshanik-ai.arshadirad7475.workers.dev/v1/chat/completi
 /* === کاتالوگ واقعی نیوشا — فقط محصولات موجود در newshanik.ir (قیمت مصرف‌کننده، تومان) === */
 var NIO_SRC='https://newshanik.ir';
 var NIO_UPD='۱۴۰۵/۰۶/۰۹';
+var NIO_BUILD='2026-09-13b';   // نشانهٔ نسخه — فوتر نشان می‌دهد
 var NIO_PRODUCTS=[
   {id:'2206',n:'دمنوش خالص به مثلثی نیوشا (12عددی)',p:250000,c:'دمنوش خالص',t:['دمی'],d:'آرامش و تقویت قلب',u:'https://newshanik.ir/product/2206/'},
   {id:'2332',n:'دمنوش خالص زیره سبز مثلثی نیوشا (12 عددی)',p:240000,c:'دمنوش خالص',t:['بلغمی'],d:'هضم و نفخ',u:'https://newshanik.ir/product/2332/'},
@@ -700,11 +701,36 @@ function nioFaR(L){
    «Here's a thinking process…» پر می‌کنند و فقط چند کلمهٔ فارسی داخل بولت‌ها
    می‌آید؛ فیلتر قدیمیِ «فقط ASCII» چنین متنی را سالم می‌دید و برندهٔ مسابقه
    می‌شد. اینجا نسبت فارسی به لاتین سنجیده می‌شود. */
+function nioFaLines(t){                       // خطوطِ بلندِ بدونِ هیچ کاراکتر فارسی
+  if(!t)return 0; var n=0,ls=t.split('\n'),L;
+  for(var i=0;i<ls.length;i++){L=ls[i]; if(L.trim().length>=45&&!/[\u0600-\u06FF]/.test(L))n++;}
+  return n;
+}
 function nioFaWeak(t){
   if(!t)return true;
   var fa=(t.match(/[\u0600-\u06FF]/g)||[]).length;
   var la=(t.match(/[A-Za-z]/g)||[]).length;
-  return fa<8 || fa/Math.max(1,fa+la)<=0.12;   // آستانهٔ فارسی پایین: پاسخ کوتاهِ فارسی هم رد نشود
+  var r=fa/Math.max(1,fa+la);
+  if(fa<8||r<=0.12)return true;                 // بی‌فارسی (پاسخِ کوتاهِ فارسی رد نشود)
+  /* آستانهٔ قدیمی ۰٫۱۲ بود؛ «تحلیل انگلیسی با نام‌های فارسیِ دمنوش» r≈۰٫۴۸ می‌داد
+     و رد می‌شد → کاربر متنِ انگلیسی دید. بدنهٔ پاسخ باید فارسیِ غالب باشد. */
+  if(t.length>160&&r<0.55)return true;
+  if(nioFaLines(t)>=2)return true;               // دو پاراگراف/هدینگِ تمام‌لاتین
+  return false;
+}
+function nioFaScrub(t){                          // بیرون‌کشیدنِ خطوطِ انگلیسی از دلِ پاسخِ فارسی
+  if(!t||t.length>14000)return t;
+  if(!/[\u0600-\u06FF]/.test(t))return t;
+  var ls=t.split('\n'),out=[],drop=0;
+  for(var i=0;i<ls.length;i++){
+    var L=ls[i];
+    if(L.trim().length>=45&&!/[\u0600-\u06FF]/.test(L)){drop++;continue;}
+    out.push(L);
+  }
+  if(!drop)return t;
+  var v=out.join('\n');
+  if(v.replace(/\s/g,'').length<60)return t;     // اگر بیشترِ متن رفت، دست‌نزن؛ nioFaWeak ردش می‌کند
+  return v;
 }
 function nioStripCot(t){
   if(!t)return t;
@@ -756,7 +782,7 @@ function callAI(prompt, onLive, hintTopics, imgBase64) {
     var got=false;
     function win(v){
       if(won||!v)return;
-      v=nioStripCot(v);
+      v=nioFaScrub(nioStripCot(v));
       /* درگاه نهایی: اگر خروجیِ باقی‌مانده هم فارسی نبود (فقط تفکر انگلیسی یا
          تهی)، به کاربر متن بیگانه نشان داده نمی‌شود. مسیر پکیجی بستهٔ قطعیِ
          کاتالوگ را می‌گیرد (nioPkgFix روی متن خالی = همهٔ اقلام رسمی با قیمت
@@ -772,7 +798,7 @@ function callAI(prompt, onLive, hintTopics, imgBase64) {
     }
     function finish(v,model){
       if(won)return;
-      v=nioStripCot(v);                                    // پیش‌نویس انگلیسی قبل از ممیزی حذف شود
+      v=nioFaScrub(nioStripCot(v));                                    // پیش‌نویس انگلیسی قبل از ممیزی حذف شود
       live[model]='';
       if(v&&v.length>bestReasoning.length)bestReasoning=v;
       var ok=!!v&&v.length>10&&!nioFaWeak(v);              // پیش‌نویس انگلیسیِ آمیخته با چند کلمهٔ فارسی هم رد می‌شود
@@ -790,10 +816,10 @@ function callAI(prompt, onLive, hintTopics, imgBase64) {
       if(!onLive||won)return;
       live[model]=full;
       if(!liveModel){
-        if(full.length<40||!/[\u0600-\u06FF]/.test(full))return;
+        if(full.length<40||nioFaR(full.slice(0,160))<0.55)return;
         liveModel=model;setAI('ok');
       }
-      if(liveModel===model)onLive(nioStripCot(full));
+      if(liveModel===model)onLive(nioFaScrub(nioStripCot(full)));
     }
     /* سقف صبر: اگر هیچ پاسخی تمام نشده بود، بلندترین متنِ در حال جریان گرفته و قطعی تکمیل می‌شود.
        تیک تکرارشونده است (نه یک‌باره)، چون upstream رایگان ممکن است در ۲۰ ثانیه اول هیچ متنِ
@@ -1479,7 +1505,7 @@ function updProducts(){
     if(other.length){h+='<div class="card"><h2>📦 سایر محصولات نیوشا</h2>';other.forEach(function(p){h+=pCard(p)});h+='</div>';}
   }
   $('p-list').innerHTML=h||'<div class="card"><p>محصولی یافت نشد.</p></div>';
-  var u=$('nio-upd');if(u)u.textContent='قیمت مصرف‌کننده — بروزرسانی: '+NIO_UPD+' — منبع: newshanik.ir';
+  var u=$('nio-upd');if(u)u.textContent='قیمت مصرف‌کننده — بروزرسانی: '+NIO_UPD+' — منبع: newshanik.ir · b'+NIO_BUILD;
 }
 
 function pCard(p){return'<div class="pc" onclick="showP(\''+p.name+'\')"><div class="ico" style="background:'+p.color+'">'+p.icon+'</div><div class="inf"><h4>'+p.name+' <span class="badge">'+p.type+'</span></h4><p>'+p.desc+'</p><p style="font-weight:700;color:var(--p);font-size:.85rem">💰 '+fmtT(p.price)+' تومان</p></div></div>';}
