@@ -727,16 +727,31 @@ function callAI(prompt, onLive, hintTopics, imgBase64) {
   var kb=trainContext(prompt,hintTopics);
   if(kb)sysPrompt+='\n\n📚 دانش مرجع از جزوه‌های رسمی نیوشا (معتبرترین منبع — دقیقاً بر اساس این پاسخ بده و از خود چیزی نساز):\n'+kb;
   var isPkg=/📦|پکیج/.test(prompt);
-  var CAP=75000;                       // سقف عمر هر stream (مدل‌های کندتر کنار می‌روند)
+  /* ۹router برخلاف Workers AI جریانِ content را تا پایانِ تولید بافر می‌کند:
+     اولین بایتِ متن عملاً هم‌زمان با آخرین توکن می‌رسد (پیمایش زنده با curl:
+     پرامپت کوتاه ۳ تا ۴۰ ثانیه، پرامپت واقعیِ پکیج ~۹۰ تا ۱۰۵ ثانیه).
+     سقف‌های ۷۵/۷۰ ثانیهٔ دوران Workers AI باعث می‌شد مسیر پکیج هیچ‌وقت
+     کامل نشود و کاربر «AI وصل نشد» ببیند. پس سقف‌ها بالای بدترین زمان
+     اندازه‌گیری‌شده گذاشته شده‌اند. */
+  var CAP=140000;                      // سقف عمر هر stream
   var PKG_MAX=7000;                    // سقف طول پاسخ پکیجی؛ بیشتر از این یعنی تولید مهارشده
-  var GRACE=isPkg?22000:0;             // سقف صبر برای «پاسخ منطبق»
-  var HARD=isPkg?70000:0;              // سقف مطلق انتظار برای پاسخ پکیجی
+  var GRACE=isPkg?95000:0;             // سقف صبر برای «پاسخ منطبق»
+  var HARD=isPkg?135000:0;              // سقف مطلق انتظار برای پاسخ پکیجی
   return new Promise(function(final) {
-    /* ترتیب مسابقه بر پایهٔ بنچمارک زندهٔ ۲۰۲۶-۰۹-۱۲ روی بک‌اند 9router (سه نمونه در هر مستعار):
-       B=qwen3.8-flash ۳/۳ و ~۴ ثانیه | Openouter=nemotron-3.5-lightning-free ۳/۳ و ~۴٫۲ ثانیه |
-       Rezzz=nemotron-3-ultra-free ۳/۳ ولی ~۲۷ ثانیه | gem=gemma-4-31b-it ۰/۳ (بدنهٔ خالی یا ۵۰۲).
-       therefore: سریع‌ها اول، gem آخرِ صف (فقط برای روزی که upstreamش درست شود). */
-    var order=['B','Openouter','Rezzz','gem'];
+    /* ترتیب مسابقه — بنچمارک زندهٔ ۱۳ سپتامبر روی بک‌اند 9router.
+       روش سنجش: curl با User-Agent مرورگر. (fetchِ پایتون/نود روی workers.dev با
+       کد 1010ِ Browser Integrity Check بسته می‌شود؛ بنچمارک قبلیِ «B و Openouter
+       چهارثانیه‌ای / gem خراب» از همین اشتباه آمد و باطل است.)
+       پرامپت واقعیِ پکیج، max_tokens=4096 (همان که اپ می‌فرستد):
+         B=qwen3.8-flash            ~۱۰۲ ثانیه | ۱۳۷۲ کاراکتر | فارسی ✅
+         gem=gemini-3.6-flash       ~۱۲۵ ثانیه | ۱۶۹۸ کاراکتر | فارسی ✅ (عنبیه: ۳۰ ثانیه ✅)
+         Rezzz=nemotron-3-ultra-free: جواب می‌دهد ولی در پرامپت بلند «تفکر» انگلیسی
+                                می‌ریزد (نسبت فارسی ۰٫۱۱) → درگاه nioFaWeak رد می‌کند
+         Openouter=nemotron-3.5-lightning-free: در سه تست هیچ بایتِ متنی نداد ✗
+       نکتهٔ مهم: 9router برخلاف Workers AI، متن را تا پایانِ تولید بافر می‌کند؛
+       اولین بایت ≈ آخرین توکن. پس برنده کسی است که زودتر «تمام» کند، نه زودتر
+       «شروع» کند — و سقف‌های زمانی هم بر همین اساس بالا رفته‌اند (CAP=140s). */
+    var order=['B','gem','Rezzz','Openouter'];
     var pending=order.length,won=false,bestReasoning='',best=null,bestScore=-99,liveModel=null,grace=null,live={};
     var got=false;
     function win(v){
