@@ -778,6 +778,9 @@ function callAI(prompt, onLive, hintTopics, imgBase64) {
        اولین بایت ≈ آخرین توکن. پس برنده کسی است که زودتر «تمام» کند، نه زودتر
        «شروع» کند — و سقف‌های زمانی هم بر همین اساس بالا رفته‌اند (CAP=140s). */
     var order=['B','gem','Rezzz','Openouter'];
+    /* برای پکیج ترتیب عوض می‌شود: در آزمونِ نسخهٔ فعال (۲۲:۲۵ UTC) B پکیج را تا ۱۵۰s
+       هیچ بایتی تولید نکرد، ولی gem دو بار در ۱۱۳s و ۱۲۵s تمام کرد → gem اول. */
+    if(isPkg)order=['gem','B','Rezzz','Openouter'];
     var pending=order.length,won=false,bestReasoning='',best=null,bestScore=-99,liveModel=null,grace=null,live={};
     var got=false;
     function win(v){
