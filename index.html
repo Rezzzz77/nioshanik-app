@@ -777,10 +777,10 @@ function callAI(prompt, onLive, hintTopics, imgBase64) {
        نکتهٔ مهم: 9router برخلاف Workers AI، متن را تا پایانِ تولید بافر می‌کند؛
        اولین بایت ≈ آخرین توکن. پس برنده کسی است که زودتر «تمام» کند، نه زودتر
        «شروع» کند — و سقف‌های زمانی هم بر همین اساس بالا رفته‌اند (CAP=140s). */
-    var order=['B','gem','Rezzz','Openouter'];
+    var order=['gemini/gemini-3.5-flash-lite','gemini/gemini-3.6-flash'];
     /* برای پکیج ترتیب عوض می‌شود: در آزمونِ نسخهٔ فعال (۲۲:۲۵ UTC) B پکیج را تا ۱۵۰s
        هیچ بایتی تولید نکرد، ولی gem دو بار در ۱۱۳s و ۱۲۵s تمام کرد → gem اول. */
-    if(isPkg)order=['gem','B','Rezzz','Openouter'];
+    if(isPkg)order=['gemini/gemini-3.5-flash-lite','gemini/gemini-3.6-flash'];
     var pending=order.length,won=false,bestReasoning='',best=null,bestScore=-99,liveModel=null,grace=null,live={};
     var got=false;
     function win(v){
@@ -876,7 +876,7 @@ function probeAI(){
   // چند مدل هم‌زمان تست می‌شوند؛ اولین بایت متن = «فعال».
   // سقف قبلی ۱۵ ثانیه بود، ولی اولین توکن مدل‌ها ۶ تا ۳۰ ثانیه طول می‌کشد،
   // بنابراین پروب همیشه قبل از پاسخ قطع می‌شد و بی‌دلیل «آفلاین» نشان می‌داد.
-  var probes=['Openouter','Rezzz','B'],left=probes.length,done=false;
+  var probes=['gemini/gemini-3.5-flash-lite','gemini/gemini-3.6-flash'],left=probes.length,done=false;
   function ok(){if(done)return;done=true;setAI('ok')}
   probes.forEach(function(m){
     streamModel(WORKER_URL,m,'فقط بگو فعال',function(r){
